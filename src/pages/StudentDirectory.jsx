@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { fetchAllStudents } from "../utils/students";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import NewStudentForm from '../components/NewStudentForm';
 
 const StudentDirectory = () => {
   const [students, setStudents] = useState([]);
@@ -92,22 +93,25 @@ const StudentDirectory = () => {
       </section>
 
       {addNewStudent ? 
-      <div className="new-student">
-        <div className="new-student-form">
-          <IconButton
-            onClick={() => setAddNewStudent(prevState => !prevState)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          New Student Form
+        <div className="new-student">
+          <div className="new-student-form">
+            <NewStudentForm />
+            
+            {/* exit button */}
+            <IconButton
+              onClick={() => setAddNewStudent(prevState => !prevState)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
         </div>
-      </div> : null }
+      : null }
     </>
   );
 }
