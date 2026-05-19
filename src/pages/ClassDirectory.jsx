@@ -7,10 +7,14 @@ import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 
 import Button from '@mui/material/Button';
-
-import SearchIcon from '@mui/icons-material/Search';
 import InputBase from '@mui/material/InputBase';
 
+import ImageList from '@mui/material/ImageList';
+
+// Icons
+import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 const ClassDirectory = () => {
 
@@ -42,28 +46,40 @@ const ClassDirectory = () => {
     }
   ]
 
+  /*
+  todo:
+  - implement search -> filter by name
+  - implement add class -> nav
+  - implement delete class -> option to select classes to delete
+  - implement view dashboard -> dynamically navigates to class page
+  */
+
   return (
-    <>
+    <div className="classdirectory-div">
       {/* Header */}
       <h1>Class Directory</h1>
 
       {/* Search bar and add, delete buttons */}
-      <SearchIcon />
-      <InputBase
-        placeholder="Search…"
-        inputProps={{ 'aria-label': 'search' }}
-      />
-      <div className="classbuttons-div">
-        <Button sx={{"background-color": "#11578A", "color": "white"}} variant="contained">Add Class</Button>
-        <Button sx={{"background-color": "#11578A", "color": "white"}} variant="contained">Delete Class</Button>
+      <div className="actions-div">
+        <div className="search-bar">
+          <SearchIcon />
+          <InputBase
+            placeholder="Search for class by name…"
+            inputProps={{ 'aria-label': 'search' }}
+            sx={{"flexGrow": "1"}}
+          />
+        </div>
+        <div className="classbuttons-div">
+          <Button sx={{"backgroundColor": "#11578A", "color": "white"}} variant="contained" startIcon={<AddIcon />}>Add Class</Button>
+          <Button sx={{"backgroundColor": "#CE2626", "color": "white"}} variant="contained" startIcon={<DeleteIcon />}>Delete Class</Button>
+        </div>
       </div>
 
-
       {/* Grid of all classes */}
-      <div className="classlist-div">
+      <ImageList cols={3} gap={8}>
         {classData.map(aClass => (
           // Card background
-          <Card sx={{ minWidth: 380 }}>
+          <Card sx={{ "backgroundColor": "#FFFDEB"}}>
 
             <CardActionArea sx={{display: "flex", "flex-direction": "row", "justify-content": "space-between"}}>
               
@@ -75,7 +91,7 @@ const ClassDirectory = () => {
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   {aClass.teacher}
                 </Typography>
-                <Button sx={{"background-color": "#11578A", "color": "white"}} variant="contained">View Dashboard</Button>
+                <Button sx={{"backgroundColor": "#11578A", "color": "white"}} variant="contained">View Dashboard</Button>
               </CardContent>
               
               {/* Card image */}
@@ -89,8 +105,8 @@ const ClassDirectory = () => {
             </CardActionArea>
           </Card>
         ))}
-      </div>
-    </>
+      </ImageList>
+    </div>
   )
 };
 
