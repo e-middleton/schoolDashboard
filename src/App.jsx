@@ -16,7 +16,7 @@ function App() {
         <div className="nav-linksdiv">
 
           <div className="nav-leftalign">
-            <NavLink to="/class-directory" className="nav-link">All Classes</NavLink>
+            <NavLink to="/class-directory" className="nav-link">Class Directory</NavLink>
             <NavLink to="/student-directory" className="nav-link">Student Directory</NavLink>
             <NavLink to="/teacher-directory" className="nav-link">Teacher Directory</NavLink>
           </div>
