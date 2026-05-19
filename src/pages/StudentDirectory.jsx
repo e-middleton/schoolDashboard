@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { fetchAllStudents } from "../utils/students";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
 import NewStudentForm from '../components/NewStudentForm';
 
 const StudentDirectory = () => {
@@ -76,15 +77,18 @@ const StudentDirectory = () => {
 
           {/* Image and Add Student Button */}
           <div className="half-content">
-            <Button
-            sx={{
-              backgroundColor:"#ce2626", 
-              color: "white",
-              width: 'fit-content',
-              marginBottom: "20px",
-              textTransform: 'none'}}
-            onClick={() => setAddNewStudent(prevState => !prevState)}
-              >
+            <Button 
+              sx={{
+                "backgroundColor": "#ce2626", 
+                "color": "white", 
+                width: 'fit-content',
+                marginBottom: "20px",
+                marginTop: "10px"}
+              } 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              onClick={() => setAddNewStudent(prevState => !prevState)}
+            >
               Add Student
             </Button>
             <img className="image" src={playground} alt="School Playground Image" />
@@ -96,7 +100,7 @@ const StudentDirectory = () => {
         <div className="new-student">
           <div className="new-student-form">
             <NewStudentForm />
-            
+
             {/* exit button */}
             <IconButton
               onClick={() => setAddNewStudent(prevState => !prevState)}
