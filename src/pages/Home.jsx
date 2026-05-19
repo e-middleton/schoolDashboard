@@ -11,7 +11,7 @@ const Home = () => {
     <section className="home-page">
       <div className="home-content">
         <div className="home-copy">
-          <h1>Welcome to Thomas Jefferson Elementary School!</h1>
+          <h1>Welcome to Thomas Jefferson Elementary School class management hub!</h1>
           <p>
             Explore classes, students, teachers, and calendars from one central
             place.
@@ -22,7 +22,7 @@ const Home = () => {
             variant="contained"
             sx={{ backgroundColor: '#11578A', color: 'white', width: 'fit-content', textTransform: 'none' }}
           >
-            Go to Class Dashboard
+            Go to Class Directory
           </Button>
         </div>
 
