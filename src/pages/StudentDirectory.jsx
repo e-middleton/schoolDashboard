@@ -30,7 +30,7 @@ const StudentDirectory = () => {
     };
 
     fetchData();
-  }, []);
+  }, [addNewStudent]);
 
   return (
     <>
@@ -99,7 +99,7 @@ const StudentDirectory = () => {
       {addNewStudent ? 
         <div className="new-student">
           <div className="new-student-form">
-            <NewStudentForm />
+            <NewStudentForm addNewStudent={setAddNewStudent}/>
 
             {/* exit button */}
             <IconButton
