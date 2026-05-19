@@ -56,6 +56,9 @@
 }
   
 .new-student-form {
+  display: grid;
+  grid-template-rows: 1fr 6fr 1fr;
+  place-items: center;
   position: absolute; /* Takes the div out of the flow */
   top: 40%;         /* position in screen center */
   left: 50%; 
