@@ -1,13 +1,14 @@
 import {Box, TextField, Button }from '@mui/material';
 import "../styling/StudentDirectory.css";
-import { addStudent } from '../utils/students';
-import { useState, useEffect } from 'react'; 
+import { addStudent, updateStudent } from '../utils/students';
+import { useState, useEffect, useRef } from 'react'; 
 
-const NewStudentForm = ( {addNewStudent} ) => {
+const NewStudentForm = ( {update, message, defaultInfo, closePopup} ) => {
+  const isMounted = useRef(false);
   const [enter, setEnter] = useState(false);
-  const [studentData, setStudentData] = useState({firstName: "", lastName: "", class: ""})
+  const [studentData, setStudentData] = useState(defaultInfo);
   const [errors, setErrors] = useState({one: false, two: false, three: false})
-
+  const [isUpdated, setIsUpdated] = useState(false);
   const errMessage = "Required Field";
 
   const handleSubmit = () => {
@@ -25,40 +26,57 @@ const NewStudentForm = ( {addNewStudent} ) => {
     }
     setErrors({one: err1, two: err2, three: err3});
 
-    if (! (studentData.firstName && studentData.lastName && studentData.class) ) return;
+    if ( err1 || err2 || err3 ) return;
 
+    // notify if the old entry has been updated
+    if (update) {
+      setIsUpdated(true);
+    }
 
     // clear out error messages
     setErrors({one: false, two: false, three: false});
 
     // triggers useEffect to update the database
     setEnter(prevState => !prevState);
-
     return 
   }
 
   useEffect(() => {
-    const createStudent = async () => {
-      try {
-        // prevents database additions on initial render
-        console.log("adding a student here");
-        if (studentData.firstName === "") return; 
-        console.log("first name is good!");
-        await addStudent(studentData);
+    // create a new student record
+    if (isMounted.current) {
+      const createStudent = async () => {
+        try {
+          if (studentData.firstName === "") return;
+          await addStudent(studentData);
 
-        // close popup, passes state back to parent
-        addNewStudent(prevState => !prevState);
-      } catch (error) {
-        console.error(error);
+          // close popup, passes state back to parent
+          closePopup(prevState => !prevState);
+        } catch (error) {
+          console.error(error);
+        }
       }
-    }
 
-    createStudent();
+      // update an old student record
+      const updateRecord = async () => {
+        if (!isUpdated) return;
+
+        try {
+          await updateStudent(studentData);
+          closePopup(prevState => !prevState);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      update ? updateRecord() : createStudent();
+    } else {
+      isMounted.current = true;
+    }
   }, [enter])
 
   return (
     <>
-      <h3 style={{textAlign:'center', padding:"5px 0 1px 0"}}>New Student Form</h3>
+      <h3 style={{textAlign:'center', padding:"5px 0 1px 0"}}>{message}</h3>
       <Box
         component="form"
         sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' , display: 'flex', flexDirection: 'row'} }}
@@ -92,7 +110,9 @@ const NewStudentForm = ( {addNewStudent} ) => {
           helperText={errors.three ? errMessage : ""}
           onChange={(e) => {setStudentData({...studentData, class: e.target.value})}}
         />
-        <Button sx={{margin: "8px"}}
+        <Button sx={{
+          backgroundColor:"#3877A6",
+          margin: "8px"}}
           variant="contained" 
           onClick={() => handleSubmit()}
         > 
