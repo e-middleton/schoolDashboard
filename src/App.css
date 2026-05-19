@@ -43,7 +43,7 @@ nav {
 
 /* Main (Content Layout)------------------------------------------ */
 main {
-  padding: 2rem;
+  padding: 2rem 8rem;
 
   /* background-color: gray; */
   /*for debugging/seeing border -> feel free to comment out*/

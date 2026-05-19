@@ -1,7 +1,40 @@
+/* Main container */
+.classdirectory-div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 /* List of all classes */
 .classlist-div {
-  display: flex;
+  display: grid;
   flex-direction: row;
   flex-wrap: wrap;
+  gap: 1rem;
+  background-color: gray;
+}
+
+/* Container holding actions (Search field and buttons) */
+.actions-div {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.search-bar {
+  background-color: rgb(206, 206, 206);
+  width: 30vw;
+  padding: 0.25rem 1rem;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add and Delete Class buttons */
+.classbuttons-div {
+  display: flex;
+  flex-direction: row;
   gap: 1rem;
 }
