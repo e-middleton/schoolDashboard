@@ -1,0 +1,7 @@
+/* List of all classes */
+.classlist-div {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
