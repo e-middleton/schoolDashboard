@@ -7,7 +7,12 @@ import {
 
 import App from './App.jsx';
 import Home from './pages/Home.jsx';
+import ClassDirectory from './pages/ClassDirectory.jsx'
 import StudentDirectory from './pages/StudentDirectory.jsx';
+import TeacherDirectory from './pages/TeacherDirectory.jsx';
+import Calendar from './pages/Calendar.jsx'
+
+import './index.css'
 
 const router = createBrowserRouter([
   {
@@ -19,9 +24,21 @@ const router = createBrowserRouter([
         element: <Home />
       },
       {
+        path: "/class-directory",
+        element: <ClassDirectory />
+      },
+      {
         path: "/student-directory",
         element: <StudentDirectory />
-      }
+      },
+      {
+        path: "/teacher-directory",
+        element: <TeacherDirectory />
+      },
+      {
+        path: "/calendar",
+        element: <Calendar />
+      },
     ],
   },
 ])
