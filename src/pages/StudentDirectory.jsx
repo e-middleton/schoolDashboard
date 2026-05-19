@@ -5,9 +5,12 @@ import StudentCard from '../components/StudentCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { fetchAllStudents } from "../utils/students";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 const StudentDirectory = () => {
   const [students, setStudents] = useState([]);
+  const [addNewStudent, setAddNewStudent] = useState(false);
 
   // fetch database (happens with each reload)
   useEffect(() => {
@@ -29,7 +32,7 @@ const StudentDirectory = () => {
 
   return (
     <>
-      <section className="page">
+      <section className={`page ${addNewStudent ? "blurred" : ""}`}>
         <div className="directory-content">
           <div className="half-content">
             
@@ -78,13 +81,33 @@ const StudentDirectory = () => {
               color: "white",
               width: 'fit-content',
               marginBottom: "20px",
-              textTransform: 'none'}}>
+              textTransform: 'none'}}
+            onClick={() => setAddNewStudent(prevState => !prevState)}
+              >
               Add Student
             </Button>
             <img className="image" src={playground} alt="School Playground Image" />
           </div>
         </div>
       </section>
+
+      {addNewStudent ? 
+      <div className="new-student">
+        <div className="new-student-form">
+          <IconButton
+            onClick={() => setAddNewStudent(prevState => !prevState)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          New Student Form
+        </div>
+      </div> : null }
     </>
   );
 }
