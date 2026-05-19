@@ -9,7 +9,7 @@ function App() {
 
         {/* Blue Title Div */}
         <div className="nav-titlediv">
-          <h2 className="title-text">Class Management - Thomas Jefferson School</h2>
+          <NavLink to="/" className="title-text"><h2>Class Management - Thomas Jefferson School</h2></NavLink>
         </div>
 
         {/* Yellow Navlinks Div */}
