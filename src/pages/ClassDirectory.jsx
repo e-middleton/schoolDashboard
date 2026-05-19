@@ -64,7 +64,7 @@ const ClassDirectory = () => {
                   {aClass.className}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {aClass.teacher}
+                  {aClass.teacherName}
                 </Typography>
                 <Button sx={{"backgroundColor": "#11578A", "color": "white"}} variant="contained">View Dashboard</Button>
               </CardContent>
