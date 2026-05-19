@@ -16,36 +16,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
+import classes from "../utils/classes";
+
 const ClassDirectory = () => {
 
-  const classData = [
-    {
-      "name": "G3 Math",
-      "teacher": "Ms. Anne Randoll",
-      "image": ""
-    },
-    {
-      "name": "G3 Math",
-      "teacher": "Mr. Greg Gonzales",
-      "image": ""
-    },
-    {
-      "name": "[Class name]",
-      "teacher": "Teacher name",
-      "image": ""
-    },
-        {
-      "name": "[Class name]",
-      "teacher": "Teacher name",
-      "image": ""
-    },
-        {
-      "name": "[Class name]",
-      "teacher": "Teacher name",
-      "image": ""
-    }
-  ]
-
+  
   /*
   todo:
   - implement search -> filter by name
@@ -77,19 +52,19 @@ const ClassDirectory = () => {
 
       {/* Grid of all classes */}
       <ImageList cols={3} gap={8}>
-        {classData.map(aClass => (
+        {classes.map(aClass => (
           // Card background
           <Card sx={{ "backgroundColor": "#FFFDEB"}}>
 
-            <CardActionArea sx={{display: "flex", "flex-direction": "row", "justify-content": "space-between"}}>
+            <CardActionArea sx={{display: "flex", "flexDirection": "row", "justifyContent": "space-between"}}>
               
               {/* Card text and button */}
               <CardContent sx={{padding: "2rem"}}>
                 <Typography variant="h5" component="div">
-                  {aClass.name}
+                  {aClass.className}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {aClass.teacher}
+                  {aClass.teacherName}
                 </Typography>
                 <Button sx={{"backgroundColor": "#11578A", "color": "white"}} variant="contained">View Dashboard</Button>
               </CardContent>
@@ -99,7 +74,7 @@ const ClassDirectory = () => {
                 component="img"
                 height="220"
                 image={aClass.image || "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail"}
-                alt={`Image for ${aClass.name} class`}
+                alt={`Image for ${aClass.className} class`}
                 sx={{"width": 120}}
               />
             </CardActionArea>
