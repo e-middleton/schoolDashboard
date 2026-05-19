@@ -1,18 +1,19 @@
 import './../styling/StudentDirectory.css';
 import playground from '../assets/playground.png';
-import {List, Box, TextField, Button, InputAdornment }from '@mui/material';
-import StudentCard from '../components/StudentCard';
+import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { fetchAllStudents } from "../utils/students";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import NewStudentForm from '../components/NewStudentForm';
+import StudentForm from '../components/StudentForm';
 
 const StudentDirectory = () => {
   const [students, setStudents] = useState([]);
   const [addNewStudent, setAddNewStudent] = useState(false);
+  const [updateStudent, setUpdateStudent] = useState(false);
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", class: "", id: ""});
 
   // fetch database (happens with each reload)
   useEffect(() => {
@@ -30,7 +31,12 @@ const StudentDirectory = () => {
     };
 
     fetchData();
-  }, [addNewStudent]);
+  }, [addNewStudent, updateStudent]);
+
+  const handleStudentUpdate = (student) => {
+    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, class: student.class, id: student.id});
+    setUpdateStudent(prevState => !prevState);
+  }
 
   return (
     <>
@@ -69,7 +75,19 @@ const StudentDirectory = () => {
               }} >
                 {/* Map the students to list elements */}
                 {students.map( (student)  => (
-                  <StudentCard studentName={`${student.firstName} ${student.lastName}`} studentClass={student.class} key={student.id}/>
+                  <ListItem key={student.id}>
+                      <ListItemText
+                        primary={ `${student.firstName} ${student.lastName}` }
+                        secondary={ student.class }>
+                      </ListItemText>
+                      <Button 
+                      sx={{backgroundColor:"#3877A6"}}
+                      variant="contained"
+                      onClick={() => handleStudentUpdate(student)}
+                      >
+                        Update
+                      </Button>
+                  </ListItem>
                 ))}
               </List>
             </div>
@@ -96,14 +114,19 @@ const StudentDirectory = () => {
         </div>
       </section>
 
-      {addNewStudent ? 
+      {addNewStudent || updateStudent ? 
         <div className="new-student">
           <div className="new-student-form">
-            <NewStudentForm addNewStudent={setAddNewStudent}/>
-
+            <StudentForm 
+            message={addNewStudent ? "New Student Form" : "Update Student"}
+            defaultInfo={addNewStudent ? {firstName: "", lastName: "", class: ""} : defaultInfo}
+            closePopup={addNewStudent ? setAddNewStudent : setUpdateStudent}
+            update={addNewStudent ? false : true}
+            />
+            
             {/* exit button */}
             <IconButton
-              onClick={() => setAddNewStudent(prevState => !prevState)}
+              onClick={() => {addNewStudent ? setAddNewStudent(prevState => !prevState) : setUpdateStudent(prevState => !prevState)}}
               sx={{
                 position: 'absolute',
                 right: 8,

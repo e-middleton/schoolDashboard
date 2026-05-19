@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { doc, addDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import {db} from "../../firebase.js";
 
 // retrieve all student records from the database
@@ -9,13 +9,15 @@ const fetchAllStudents = async () => {
 
 // add a new student to the database
 const addStudent = async (student) => {
-  console.log("adding a student");
   await addDoc(collection(db, "students"), {
     firstName: student.firstName,
     lastName: student.lastName,
     class: student.class
   })
-
 }
 
-export { fetchAllStudents, addStudent };
+const updateStudent = async (student) => {
+  await updateDoc(doc(db, "students", student.id), student); // already includes updated field
+}
+
+export { fetchAllStudents, addStudent, updateStudent };
