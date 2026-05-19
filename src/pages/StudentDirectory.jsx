@@ -3,20 +3,30 @@ import playground from '../assets/playground.png';
 import {List, Box, TextField, Button, InputAdornment }from '@mui/material';
 import StudentCard from '../components/StudentCard';
 import SearchIcon from '@mui/icons-material/Search';
-
-// temporary student info for testing
-const studentNames = ["name1", "name2", "name3", "name4", "name5", "name6", "name7", "name8", "name9"];
-const studentClasses = ["class1", "class2", "class3", "class4", "class5", "class6", "class7", "class8", "class9"];
-
-const students = studentNames.map((student,index) => {
-  const entry = {
-    name: student ,
-    class: studentClasses[index],
-  }
-  return entry;
-});
+import { useEffect, useState } from 'react';
+import { fetchAllStudents } from "../utils/students";
 
 const StudentDirectory = () => {
+  const [students, setStudents] = useState([]);
+
+  // fetch database (happens with each reload)
+  useEffect(() => {
+
+    const fetchData = async () => {
+      try {
+        console.log("testing");
+        const data = await fetchAllStudents();
+        console.log(data);
+        setStudents(data);
+
+      } catch (error) {
+        console.error("Failed to fetch student records:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
       <section className="page">
@@ -53,8 +63,8 @@ const StudentDirectory = () => {
                 '& ul': { padding: 0 },
               }} >
                 {/* Map the students to list elements */}
-                {students.map( (student, index)  => (
-                  <StudentCard studentName={student.name} studentClass={student.class} key={index}/>
+                {students.map( (student)  => (
+                  <StudentCard studentName={`${student.firstName} ${student.lastName}`} studentClass={student.class} key={student.id}/>
                 ))}
               </List>
             </div>
