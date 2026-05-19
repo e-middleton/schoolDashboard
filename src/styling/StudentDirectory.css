@@ -36,4 +36,34 @@
   object-position: center; /* Optional: Centers the crop (default) */
   border-radius: 10px;
   padding: 0 5px 0 5px;
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.new-student {
+  position: fixed;
+  top: 0;
+  margin-top: 110px; /*under navbar*/
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Dim background */
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;     /* Centers vertically */
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+  
+.new-student-form {
+  position: absolute; /* Takes the div out of the flow */
+  top: 40%;         /* position in screen center */
+  left: 50%; 
+  transform: translate(-50%, -50%);       
+  z-index: 3; /* this one overlays the background */
+  height: 500px;
+  width: 500px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 12px 1px #d2d2d2;
+  background-color: var(--light-tan);
 }
