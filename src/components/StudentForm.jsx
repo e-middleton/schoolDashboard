@@ -1,5 +1,5 @@
 import {Box, TextField, Button }from '@mui/material';
-import "../styling/StudentDirectory.css";
+import "../styling/SearchPage.css";
 import { addStudent, updateStudent } from '../utils/students';
 import { useState, useEffect, useRef } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';

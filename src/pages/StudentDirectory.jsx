@@ -1,4 +1,4 @@
-import './../styling/StudentDirectory.css';
+import './../styling/SearchPage.css';
 import playground from '../assets/playground.png';
 import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
