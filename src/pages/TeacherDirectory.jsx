@@ -9,17 +9,20 @@ import { fetchAllPeople } from "../utils/people";
 import PersonForm from '../components/PersonForm';
 
 const TeacherDirectory = () => {
-  const [teachers, setTeachers] = useState([]);
+  const [allTeachers, setAllTeachers] = useState([]);
   const [addNewTeacher, setAddNewTeacher] = useState(false);
   const [updateTeacher, setUpdateTeacher] = useState(false);
+  const [searchName, setSearchName] = useState("");
   const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+
+  const teachers = allTeachers.filter((teacher) => `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
   // fetch database (happens with each reload)
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchAllPeople("teachers");
-        setTeachers(data);
+        setAllTeachers(data);
 
       } catch (error) {
         console.error("Failed to fetch teacher records:", error);
@@ -53,7 +56,8 @@ const TeacherDirectory = () => {
                 fullWidth
                 label="Teacher Name"
                 placeholder="Jane Doe"
-                // onChange={(e) => onNameChange(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
                 slotProps={{
                   input: {
                   endAdornment: <InputAdornment position="end">
