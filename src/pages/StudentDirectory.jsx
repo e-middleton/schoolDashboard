@@ -1,25 +1,46 @@
 import './../styling/StudentDirectory.css';
 import playground from '../assets/playground.png';
-import {List, Box, TextField, Button, InputAdornment }from '@mui/material';
-import StudentCard from '../components/StudentCard';
+import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-
-// temporary student info for testing
-const studentNames = ["name1", "name2", "name3", "name4", "name5", "name6", "name7", "name8", "name9"];
-const studentClasses = ["class1", "class2", "class3", "class4", "class5", "class6", "class7", "class8", "class9"];
-
-const students = studentNames.map((student,index) => {
-  const entry = {
-    name: student ,
-    class: studentClasses[index],
-  }
-  return entry;
-});
+import { useEffect, useState } from 'react';
+import { fetchAllStudents } from "../utils/students";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import StudentForm from '../components/StudentForm';
 
 const StudentDirectory = () => {
+  const [students, setStudents] = useState([]);
+  const [addNewStudent, setAddNewStudent] = useState(false);
+  const [updateStudent, setUpdateStudent] = useState(false);
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", class: "", id: ""});
+
+  // fetch database (happens with each reload)
+  useEffect(() => {
+
+    const fetchData = async () => {
+      try {
+        console.log("testing");
+        const data = await fetchAllStudents();
+        console.log(data);
+        setStudents(data);
+
+      } catch (error) {
+        console.error("Failed to fetch student records:", error);
+      }
+    };
+
+    fetchData();
+  }, [addNewStudent, updateStudent]);
+
+  const handleStudentUpdate = (student) => {
+    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, class: student.class, id: student.id});
+    setUpdateStudent(prevState => !prevState);
+  }
+
   return (
     <>
-      <section className="page">
+      <section className={`page ${addNewStudent ? "blurred" : ""}`}>
         <div className="directory-content">
           <div className="half-content">
             
@@ -53,8 +74,20 @@ const StudentDirectory = () => {
                 '& ul': { padding: 0 },
               }} >
                 {/* Map the students to list elements */}
-                {students.map( (student, index)  => (
-                  <StudentCard studentName={student.name} studentClass={student.class} key={index}/>
+                {students.map( (student)  => (
+                  <ListItem key={student.id}>
+                      <ListItemText
+                        primary={ `${student.firstName} ${student.lastName}` }
+                        secondary={ student.class }>
+                      </ListItemText>
+                      <Button 
+                      sx={{backgroundColor:"#3877A6"}}
+                      variant="contained"
+                      onClick={() => handleStudentUpdate(student)}
+                      >
+                        Update
+                      </Button>
+                  </ListItem>
                 ))}
               </List>
             </div>
@@ -62,19 +95,50 @@ const StudentDirectory = () => {
 
           {/* Image and Add Student Button */}
           <div className="half-content">
-            <Button
-            sx={{
-              backgroundColor:"#ce2626", 
-              color: "white",
-              width: 'fit-content',
-              marginBottom: "20px",
-              textTransform: 'none'}}>
+            <Button 
+              sx={{
+                "backgroundColor": "#ce2626", 
+                "color": "white", 
+                width: 'fit-content',
+                marginBottom: "20px",
+                marginTop: "10px"}
+              } 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              onClick={() => setAddNewStudent(prevState => !prevState)}
+            >
               Add Student
             </Button>
             <img className="image" src={playground} alt="School Playground Image" />
           </div>
         </div>
       </section>
+
+      {addNewStudent || updateStudent ? 
+        <div className="new-student">
+          <div className="new-student-form">
+            <StudentForm 
+            message={addNewStudent ? "New Student Form" : "Update Student"}
+            defaultInfo={addNewStudent ? {firstName: "", lastName: "", class: ""} : defaultInfo}
+            closePopup={addNewStudent ? setAddNewStudent : setUpdateStudent}
+            update={addNewStudent ? false : true}
+            />
+            
+            {/* exit button */}
+            <IconButton
+              onClick={() => {addNewStudent ? setAddNewStudent(prevState => !prevState) : setUpdateStudent(prevState => !prevState)}}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+        </div>
+      : null }
     </>
   );
 }

@@ -33,6 +33,9 @@ const ClassDirectory = () => {
       {/* Header */}
       <h1>Class Directory</h1>
 
+      <h2>You may notice that the card formatting looks a bit strange after the component change...</h2>
+      <p>I will ensure to fix it in my next push on this branch! :D</p>
+
       {/* Search bar and add, delete buttons */}
       <div className="actions-div">
         <div className="search-bar">
