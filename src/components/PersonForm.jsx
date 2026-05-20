@@ -1,15 +1,16 @@
 import {Box, List, ListItem, TextField, Button }from '@mui/material';
 import "../styling/SearchPage.css";
+import { addStudent, updateStudent } from '../utils/students';
 import { addTeacher, updateTeacher } from '../utils/teachers';
 import { useState, useEffect, useRef } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
 
-const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
+const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => {
   const isMounted = useRef(false);
   const [enter, setEnter] = useState(false);
-  const [teacherData, setTeacherData] = useState(defaultInfo);
-  const [errors, setErrors] = useState({one: false, two: false})
+  const [personData, setPersonData] = useState(defaultInfo);
+  const [errors, setErrors] = useState({one: false, two: false, three: false})
   const [isUpdated, setIsUpdated] = useState(false);
   const errMessage = "Required Field";
 
@@ -18,11 +19,11 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
     let err1 = false;
     let err2 = false;
 
-    if (teacherData.firstName === "" ) {
+    if (personData.firstName === "" ) {
       err1 = true;
-    } else if (teacherData.lastName === "" ) {
+    } else if (personData.lastName === "" ) {
       err2 = true;
-    } 
+    }
     setErrors({one: err1, two: err2});
 
     if ( err1 || err2 ) return;
@@ -41,12 +42,17 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
   }
 
   useEffect(() => {
-    // create a new teacher record
+    // create a new student record
     if (isMounted.current) {
-      const createTeacher = async () => {
+      const createRecord = async () => {
         try {
-          if (teacherData.firstName === "") return;
-          await addTeacher(teacherData);
+          if (personData.firstName === "") return;
+
+          if (isStudent) {
+            await addStudent(personData);
+          } else {
+            await addTeacher(personData);
+          }
 
           // close popup, passes state back to parent
           closePopup(prevState => !prevState);
@@ -60,14 +66,18 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
         if (!isUpdated) return;
 
         try {
-          await updateTeacher(teacherData);
+          if (isStudent) {
+            await updateStudent(personData);
+          } else {
+            await updateTeacher(personData);
+          }
           closePopup(prevState => !prevState);
         } catch (error) {
           console.error(error);
         }
       }
 
-      update ? updateRecord() : createTeacher();
+      update ? updateRecord() : createRecord();
     } else {
       isMounted.current = true;
     }
@@ -78,33 +88,35 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
       <h3 style={{textAlign:'center', padding:"5px 0 1px 0"}}>{message}</h3>
       <Box
         component="form"
-        sx={{display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
+        sx={{width: "75%", display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
         noValidate
         autoComplete="off"
       >
         <TextField
           required
-          value={teacherData.firstName}
+          fullWidth
+          value={personData.firstName}
           id="outlined-required"
           label="First Name"
           error={errors.one}
           helperText={errors.one ? errMessage : ""}
-          onChange={(e) => {setTeacherData({...teacherData, firstName: e.target.value})}}
+          onChange={(e) => {setPersonData({...personData, firstName: e.target.value})}}
         />
         <TextField
           required
-          value={teacherData.lastName}
+          fullWidth
+          value={personData.lastName}
           id="outlined-required"
           label="Last Name"
           error={errors.two}
           helperText={errors.two ? errMessage : ""}
-          onChange={(e) => {setTeacherData({...teacherData, lastName: e.target.value})}}
+          onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
         />
 
         {/* assigned classes */}
         {update ? 
         <>
-          <h4 style={{textAlign:'center', padding:"5px 0 4px 0"}}>Assigned Classes</h4>
+          <h4 style={{textAlign:'center', padding:"15px 0 15px 0"}}>Assigned Classes</h4>
           <div className="class-list">
             <List sx={{
                   width: '100%',
@@ -112,8 +124,8 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
                   overflow: 'auto',
                   '& ul': { padding: 0 },
                 }} >
-                  {/* Map the classes associated with the teacher */}
-                  {teacherData.classes.map( (item)  => (
+                  {/* Map the classes associated with the person */}
+                  {personData.classes.map( (item)  => (
                     <ListItem key={item.id}>
                       <Button component={NavLink} to={`/class-directory/${item.id}`} variant="outlined" fullWidth>
                         {item.name}
@@ -124,28 +136,31 @@ const TeacherForm = ( { update, message, defaultInfo, closePopup } ) => {
           </div> 
         </>
         : null }
-
+        
         <Button sx={{
           backgroundColor:"#3877A6",
-          margin: "8px"}}
+          width: "200px",
+          margin: "8px",
+          marginTop: "30px"}}
           variant="contained" 
           onClick={() => handleSubmit()}
         > 
-          Save Teacher 
+          {isStudent ? "Save Student" : "Save Teacher"} 
         </Button>
 
         <Button sx={{
           m: "8px",
-          "backgroundColor": "#CE2626", 
-          "color": "white"
+          width: "200px",
+          backgroundColor: "#CE2626", 
+          color: "white"
           }} 
           variant="contained" 
           startIcon={<DeleteIcon />}
           >
-            Delete Teacher
+            {isStudent ? "Delete Student" : "Delete Teacher"} 
           </Button>
       </Box>
     </>
   );
 }
-export default TeacherForm
+export default PersonForm
