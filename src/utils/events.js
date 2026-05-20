@@ -1,3 +1,7 @@
+import { doc, setDoc } from 'firebase/firestore';
+
+import { db } from '../../firebase.js';
+
 export const calendarEvents = [
 	{
 		title: 'Morning Assembly',
@@ -64,3 +68,16 @@ export const calendarEvents = [
 		color: '#8A5CF6',
 	},
 ];
+
+const makeEventDocId = (eventItem) => `${eventItem.date}-${eventItem.title}-${eventItem.startTime}`
+	.toLowerCase()
+	.replace(/[^a-z0-9]+/g, '-')
+	.replace(/^-+|-+$/g, '');
+
+const seedCalendarEvents = async () => {
+	await Promise.all(
+		calendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
+	);
+};
+
+void seedCalendarEvents();
