@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import desk from "../assets/desk.png";
-import { fetchAllTeachers } from "../utils/teachers";
+import { fetchAllPeople } from "../utils/people";
 import PersonForm from '../components/PersonForm';
 
 const TeacherDirectory = () => {
@@ -18,7 +18,7 @@ const TeacherDirectory = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchAllTeachers();
+        const data = await fetchAllPeople("teachers");
         setTeachers(data);
 
       } catch (error) {
@@ -116,7 +116,7 @@ const TeacherDirectory = () => {
       {/* popup to add or edit teacher records */}
       {addNewTeacher || updateTeacher ? 
         <div className="form-overlay">
-          <div className="person-form">
+          <div className="person-form" style={{gridTemplateRows: addNewTeacher ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>
             <PersonForm
             isStudent={false} 
             message={addNewTeacher ? "New Teacher Form" : "Update Teacher"}
