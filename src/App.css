@@ -1,6 +1,9 @@
 /* Navigation Bar------------------------------------------ */
 
 nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Ensures it stays above other content */
   display: flex;
   flex-direction: column;
 }
