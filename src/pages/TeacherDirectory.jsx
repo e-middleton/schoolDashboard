@@ -118,8 +118,8 @@ const TeacherDirectory = () => {
       
       {/* popup to add or edit teacher records */}
       {addNewTeacher || updateTeacher ? 
-        <div className="new-student">
-          <div className="new-student-form">
+        <div className="form-overlay">
+          <div className="person-form">
             <TeacherForm 
             message={addNewTeacher ? "New Teacher Form" : "Update Teacher"}
             defaultInfo={addNewTeacher ? {firstName: "", lastName: "", class: ""} : defaultInfo}

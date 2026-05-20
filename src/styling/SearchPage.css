@@ -21,12 +21,20 @@
   gap: 10px
 }
 
-.student-list {
+.people-list {
   background-color: var(--light-tan);
   border-radius: 10px;
   box-shadow: 2px 2px 12px 1px #d2d2d2;
   height: 500px;
   overflow: auto;
+}
+
+.class-list {
+  height: 60px;
+  width: 210px;
+  margin: 8px;
+  overflow: auto;
+  box-shadow: 2px 2px 12px 1px #d2d2d2;
 }
 
 .image {
@@ -40,7 +48,7 @@
   grid-column: 1;
 }
 
-.new-student {
+.form-overlay {
   position: fixed;
   top: 0;
   margin-top: 110px; /*under navbar*/
@@ -55,7 +63,7 @@
   backdrop-filter: blur(10px);
 }
   
-.new-student-form {
+.person-form {
   display: grid;
   grid-template-rows: 1fr 6fr 1fr;
   place-items: center;
