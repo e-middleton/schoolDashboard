@@ -12,7 +12,7 @@ const addStudent = async (student) => {
   await addDoc(collection(db, "students"), {
     firstName: student.firstName,
     lastName: student.lastName,
-    class: student.class
+    classes: []
   })
 }
 
