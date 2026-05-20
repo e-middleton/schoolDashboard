@@ -9,7 +9,7 @@ const default_image = "https://kidsparkeducation.org/hubfs/stem-elementary-schoo
 const ClassCard = ( {className, teacherName, image, onView} ) => {
   return (
     <Card sx={{ "backgroundColor": "#FFFDEB"}}>
-      <CardActionArea sx={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+      <CardContent sx={{padding: "0rem", display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
         {/* Card text and button */}
         <CardContent sx={{padding: "2rem"}}>
           <Typography variant="h5" component="div">
@@ -34,7 +34,7 @@ const ClassCard = ( {className, teacherName, image, onView} ) => {
           alt={`Image for ${className} class`}
           sx={{"width": 120}}
         />
-      </CardActionArea>
+      </CardContent>
     </Card>
   );
 };
