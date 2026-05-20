@@ -106,7 +106,7 @@ const TeacherDirectory = () => {
                       variant="contained"
                       onClick={() => handleTeacherUpdate(teacher)}
                       >
-                        Update
+                        View
                       </Button>
                   </ListItem>
                 ))}
