@@ -3,7 +3,7 @@ import playground from '../assets/playground.png';
 import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
-import { fetchAllStudents } from "../utils/students";
+import { fetchAllPeople } from "../utils/people";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -20,7 +20,7 @@ const StudentDirectory = () => {
 
     const fetchData = async () => {
       try {
-        const data = await fetchAllStudents();
+        const data = await fetchAllPeople("students");
         setStudents(data);
 
       } catch (error) {
@@ -116,7 +116,7 @@ const StudentDirectory = () => {
 
       {addNewStudent || updateStudent ? 
         <div className="form-overlay">
-          <div className="person-form">
+          <div className="person-form" style={{gridTemplateRows: addNewStudent ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>
             <PersonForm
             isStudent={true} 
             message={addNewStudent ? "New Student Form" : "Update Student"}
