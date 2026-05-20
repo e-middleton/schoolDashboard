@@ -5,29 +5,27 @@ const classes = [
     teacherID: "teacher001",
     teacherName: "Ms. Anne Randoll",
     studentID: [
-        "student001", 
-        "student002", 
-        "student003",
-        "student004",
-        "student005",
+        "student1", 
+        "student2", 
+        "student3",
+        "student4",
+        "student5",
         
     ],
-    image: "",
 },
 {
     id: 002,
     className: "[Class name]",
-    teacherID: "teacher002",
+    teacherID: "teacher2",
     teacherName: "Mr. Greg Gonzales",
     studentID: [
-        "student006", 
-        "student007", 
-        "student008",
-        "student009",
-        "student010",
+        "student6", 
+        "student7", 
+        "student8",
+        "student9",
+        "student10",
         
     ],
-    image: "",
 }
 ];
 
