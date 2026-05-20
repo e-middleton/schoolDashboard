@@ -2,6 +2,7 @@ import {Box, TextField, Button }from '@mui/material';
 import "../styling/StudentDirectory.css";
 import { addStudent, updateStudent } from '../utils/students';
 import { useState, useEffect, useRef } from 'react'; 
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const NewStudentForm = ( {update, message, defaultInfo, closePopup} ) => {
   const isMounted = useRef(false);
@@ -79,7 +80,7 @@ const NewStudentForm = ( {update, message, defaultInfo, closePopup} ) => {
       <h3 style={{textAlign:'center', padding:"5px 0 1px 0"}}>{message}</h3>
       <Box
         component="form"
-        sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' , display: 'flex', flexDirection: 'row'} }}
+        sx={{display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
         noValidate
         autoComplete="off"
       >
@@ -116,8 +117,19 @@ const NewStudentForm = ( {update, message, defaultInfo, closePopup} ) => {
           variant="contained" 
           onClick={() => handleSubmit()}
         > 
-          Enter 
+          Save Student 
         </Button>
+
+        <Button sx={{
+          m: "8px",
+          "backgroundColor": "#CE2626", 
+          "color": "white"
+          }} 
+          variant="contained" 
+          startIcon={<DeleteIcon />}
+          >
+            Delete Student
+          </Button>
       </Box>
     </>
   );
