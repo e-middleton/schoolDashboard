@@ -17,7 +17,18 @@ const addTeacher = async (teacher) => {
 }
 
 const updateTeacher = async (teacher) => {
-  await updateDoc(doc(db, "teachers", teacher.id), teacher); // ideally should include the updated field
+  // classes is usually an array of objects, so check then map if necessary
+  if (typeof(teacher.classes) === "string"){
+    await updateDoc(doc(db, "teachers", teacher.id), teacher); // ideally should include the updated field
+  } else {
+    // separate out classIDs
+    const classIDs = teacher.classes.map((item) => {
+      return item.id;
+    })
+
+    teacher.classes = classIDs;
+    await updateDoc(doc(db, "teachers", teacher.id), teacher); // ideally should include the updated field
+  }
 }
 
 export { fetchAllTeachers, addTeacher, updateTeacher };
