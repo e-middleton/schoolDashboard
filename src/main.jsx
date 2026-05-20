@@ -12,6 +12,7 @@ import StudentDirectory from './pages/StudentDirectory.jsx';
 import TeacherDirectory from './pages/TeacherDirectory.jsx';
 import Calendar from './pages/Calendar.jsx'
 import ClassDetail from "./pages/ClassDetail.jsx"
+import GradeManagement from "./pages/GradeManagement.jsx"
 
 import './index.css'
 
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "/class-directory/:id",
         element: <ClassDetail />
+      },
+      {
+        path: "/grades/:studentID",
+        element: <GradeManagement />
       }
     ],
   },
