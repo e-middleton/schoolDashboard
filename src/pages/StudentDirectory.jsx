@@ -10,10 +10,13 @@ import AddIcon from '@mui/icons-material/Add';
 import PersonForm from '../components/PersonForm';
 
 const StudentDirectory = () => {
-  const [students, setStudents] = useState([]);
   const [addNewStudent, setAddNewStudent] = useState(false);
   const [updateStudent, setUpdateStudent] = useState(false);
   const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+  const [searchName, setSearchName] = useState("");
+  const [allStudents, setAllStudents] = useState([]);
+
+  const students = allStudents.filter((student) => `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
   // fetch database (happens with each reload)
   useEffect(() => {
@@ -21,7 +24,7 @@ const StudentDirectory = () => {
     const fetchData = async () => {
       try {
         const data = await fetchAllPeople("students");
-        setStudents(data);
+        setAllStudents(data);
 
       } catch (error) {
         console.error("Failed to fetch student records:", error);
@@ -54,7 +57,9 @@ const StudentDirectory = () => {
                 fullWidth
                 label="Student Name"
                 placeholder="Jane Doe"
-                // onChange={(e) => onNameChange(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                
                 slotProps={{
                   input: {
                   endAdornment: <InputAdornment position="end">
