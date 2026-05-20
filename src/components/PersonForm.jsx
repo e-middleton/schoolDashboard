@@ -1,6 +1,6 @@
 import {Box, List, ListItem, TextField, Button }from '@mui/material';
 import "../styling/SearchPage.css";
-import { addPerson, updatePerson } from '../utils/people';
+import { addPerson, updatePerson, deletePerson } from '../utils/people';
 import { useState } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
@@ -9,6 +9,19 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
   const [personData, setPersonData] = useState(defaultInfo);
   const [errors, setErrors] = useState({one: false, two: false, three: false})
   const errMessage = "Required Field";
+
+  const deleteRecord = async () => {
+    try {
+      if (isStudent) {
+        await deletePerson("students", personData);
+      } else {
+        await deletePerson("teachers", personData);
+      }
+      closePopup(prevState => !prevState);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const updateRecord = async () => {
     // input validation
@@ -148,6 +161,7 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           color: "white"
           }} 
           variant="contained" 
+          onClick={() => {deleteRecord()}}
           startIcon={<DeleteIcon />}
           >
             {isStudent ? "Delete Student" : "Delete Teacher"} 
