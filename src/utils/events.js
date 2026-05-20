@@ -2,6 +2,13 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase.js';
 
+// Mock data for calendar events. For testing/demo purposes
+=======
+import { doc, setDoc } from 'firebase/firestore';
+
+import { db } from '../../firebase.js';
+
+>>>>>>> 21defa2 (feat: connected events to firebase)
 export const calendarEvents = [
 	{
 		eventName: 'Library Visit',
