@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import desk from "../assets/desk.png";
 import { fetchAllPeople } from "../utils/people";
+import { fetchAllClasses } from "../utils/classes";
 import PersonForm from '../components/PersonForm';
 
 const TeacherDirectory = () => {
@@ -22,7 +23,27 @@ const TeacherDirectory = () => {
     const fetchData = async () => {
       try {
         const data = await fetchAllPeople("teachers");
-        setAllTeachers(data);
+        const classData = await fetchAllClasses();
+        
+        // map class data into teachers as objects {className, classID}
+        const teacherData = data.map((record) => {
+          if ( record.classIDs[0] ) {
+            // match the teacher's classIDs to class record ids
+            const classes = record.classIDs.map((classID) => {
+              const assignedClass = classData.filter((item) => item.id === classID)[0];
+
+              return {name: assignedClass.className, id: assignedClass.id};
+            })
+            record.classes = classes;
+          } else {
+            const classes = []; // empty
+            record.classes = classes;
+          }
+
+          return record;
+
+        })
+        setAllTeachers(teacherData);
 
       } catch (error) {
         console.error("Failed to fetch teacher records:", error);
@@ -33,10 +54,7 @@ const TeacherDirectory = () => {
   }, [addNewTeacher, updateTeacher]);
 
   const handleTeacherUpdate = (teacher) => {
-    // function to grab classes associated with a teacher id
-    const classArr = [{name: "Bio", id: "1"}, {name: "Chem", id: "2"}];
-
-    setDefaultInfo({firstName: teacher.firstName, lastName: teacher.lastName, id: teacher.id, classes: classArr});
+    setDefaultInfo({...teacher});
     setUpdateTeacher(prevState => !prevState);
   }
 
