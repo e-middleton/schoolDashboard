@@ -33,18 +33,17 @@ const GradeManagement = () => {
   */
   // if time: add search bar for assignments (?)
 
-  const id = React.useId();
 
   return (
-    <Grid container spacing={10} columns={12}>
+    <Grid container spacing={10} columns={12} sx={{"display": "flex", "justifyContent": "center"}}>
 
       {/* Left side */}
-      <Grid container direction="column" spacing={3} size={7}>
+      <Grid container direction="column" spacing={3} size={{ s: 14, md: 7}}>
         {/* Back Button */}
         <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/6}} startIcon={<ArrowBackIosIcon />} variant="contained">Back </Button>
         
         {/* Header */}
-        <h1>[Student Name]'s Grades</h1>
+        <h2>[Student Name]'s Grades</h2>
 
         {/* Add Assignments Button */}
         <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} variant="contained" startIcon={<AddIcon />}>Add Assignment</Button>
@@ -61,21 +60,20 @@ const GradeManagement = () => {
 
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              aria-controls={`${id}-panel2-content`}
-              id={`${id}-panel2-header`}
             >
               <Typography component="span">Quizzes</Typography>
             </AccordionSummary>
 
             <AccordionDetails>
-              <Grid container spacing={3}>
-                <Card sx={{"boxShadow": "none", "bgcolor": "#F5F3E4", padding: "1rem", "width": "auto", "display": "flex", "justifyContent": "space-between", "flexDirection": "row"}}>
+              <Grid container spacing={0.5}>
+                <Card sx={{"boxShadow": "none", "flexGrow": 1, "bgcolor": "#F5F3E4", padding: "1rem", "width": "auto", "display": "flex", "justifyContent": "space-between", "flexDirection": "row"}}>
                   <p>Quiz 1</p>
                   <p>95/100</p>
                 </Card>
-
-                <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/8}} startIcon={<EditIcon />} variant="contained">Edit</Button>
-                <Button sx={{"backgroundColor": "#CE2626", "color": "white", "width": "auto"}} variant="contained" startIcon={<DeleteIcon />}>Delete</Button>
+                  <Button sx={{"backgroundColor": "#11578A", "color": "white"}} startIcon={<EditIcon />} variant="contained">Edit</Button>
+                  <Button sx={{"backgroundColor": "#CE2626", "color": "white"}} variant="contained" startIcon={<DeleteIcon />}>Delete</Button>
+                <Grid container space={1}>
+                </Grid>
               </Grid>
             </AccordionDetails>
 
@@ -91,8 +89,6 @@ const GradeManagement = () => {
 
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              aria-controls={`${id}-panel2-content`}
-              id={`${id}-panel2-header`}
             >
               <Typography component="span">Quizzes</Typography>
             </AccordionSummary>
@@ -110,8 +106,15 @@ const GradeManagement = () => {
       </Grid>
 
       {/* Right side */}
-      <Grid container direction="column" size={3}>
-        <h3>Grade: </h3>
+      <Grid container direction="column" size={3} spacing={2}>
+        <h3>Grade: 94.8%</h3>
+        <h3>Assignments are weighted by group:</h3>
+        <Grid container direction="column" spacing={0.5}>
+          <p>Quizzes 20%</p>
+          <p>Participation 25%</p>
+          <p>Projects 25%</p>
+          <p>Tests 25%</p>
+        </Grid>
       </Grid>
       
     </Grid>
