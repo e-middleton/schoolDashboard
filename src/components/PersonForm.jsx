@@ -97,6 +97,7 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
         sx={{width: "75%", display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
         noValidate
         autoComplete="off"
+        style={{justifyContent: update ? "" : "center"}}
       >
         <TextField
           required
@@ -151,7 +152,7 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           variant="contained" 
           onClick={() => {update ? updateRecord() : createRecord()}}
         > 
-          {isStudent ? "Save Student" : "Save Teacher"} 
+          Save Changes
         </Button>
 
         <Button sx={{
@@ -164,7 +165,7 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           onClick={() => {deleteRecord()}}
           startIcon={<DeleteIcon />}
           >
-            {isStudent ? "Delete Student" : "Delete Teacher"} 
+            Delete
           </Button>
       </Box>
     </>
