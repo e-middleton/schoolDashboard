@@ -4,6 +4,7 @@ import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }fr
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { fetchAllPeople } from "../utils/people";
+import { fetchAllClasses } from "../utils/classes";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -24,7 +25,27 @@ const StudentDirectory = () => {
     const fetchData = async () => {
       try {
         const data = await fetchAllPeople("students");
-        setAllStudents(data);
+        const classData = await fetchAllClasses();
+        
+        // map class data into students as objects {className, classID}
+        const studentData = data.map((record) => {
+          if ( record.classIDs[0] ) {
+            // match the student's classIDs to class record ids
+            const classes = record.classIDs.map((classID) => {
+              const assignedClass = classData.filter((item) => item.id === classID)[0];
+
+              return {name: assignedClass.className, id: assignedClass.id};
+            })
+            record.classes = classes;
+          } else {
+            const classes = []; // empty
+            record.classes = classes;
+          }
+
+          return record;
+
+        })
+        setAllStudents(studentData);
 
       } catch (error) {
         console.error("Failed to fetch student records:", error);
@@ -35,9 +56,7 @@ const StudentDirectory = () => {
   }, [addNewStudent, updateStudent]);
 
   const handleStudentUpdate = (student) => {
-    // function to get classes associated with classIDs
-    const classes = [{name: "Bio", id: "2"}]
-    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, classes: classes, id: student.id});
+    setDefaultInfo({...student});
     setUpdateStudent(prevState => !prevState);
   }
 
@@ -90,7 +109,7 @@ const StudentDirectory = () => {
                       variant="contained"
                       onClick={() => handleStudentUpdate(student)}
                       >
-                        Update
+                        View
                       </Button>
                   </ListItem>
                 ))}
