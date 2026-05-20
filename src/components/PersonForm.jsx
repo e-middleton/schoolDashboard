@@ -1,20 +1,16 @@
 import {Box, List, ListItem, TextField, Button }from '@mui/material';
 import "../styling/SearchPage.css";
-import { addStudent, updateStudent } from '../utils/students';
-import { addTeacher, updateTeacher } from '../utils/teachers';
-import { useState, useEffect, useRef } from 'react'; 
+import { addPerson, updatePerson } from '../utils/people';
+import { useState } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
 
 const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => {
-  const isMounted = useRef(false);
-  const [enter, setEnter] = useState(false);
   const [personData, setPersonData] = useState(defaultInfo);
   const [errors, setErrors] = useState({one: false, two: false, three: false})
-  const [isUpdated, setIsUpdated] = useState(false);
   const errMessage = "Required Field";
 
-  const handleSubmit = () => {
+  const updateRecord = async () => {
     // input validation
     let err1 = false;
     let err2 = false;
@@ -28,60 +24,57 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
 
     if ( err1 || err2 ) return;
 
-    // notify if the old entry has been updated
-    if (update) {
-      setIsUpdated(true);
+    // clear out error messages
+    setErrors({one: false, two: false});
+
+    try {
+      if (isStudent) {
+        await updatePerson("students", personData);
+      } else {
+        await updatePerson("teachers", personData);
+      }
+      closePopup(prevState => !prevState);
+    } catch (error) {
+      console.error(error);
     }
+      
+    return 
+  }
+
+  const createRecord = async () => {
+    // input validation
+    let err1 = false;
+    let err2 = false;
+
+    if (personData.firstName === "" ) {
+      err1 = true;
+    } else if (personData.lastName === "" ) {
+      err2 = true;
+    }
+    setErrors({one: err1, two: err2});
+
+    if ( err1 || err2 ) return;
 
     // clear out error messages
     setErrors({one: false, two: false});
 
-    // triggers useEffect to update the database
-    setEnter(prevState => !prevState);
+    try {
+      if (personData.firstName === "") return;
+
+      if (isStudent) {
+        await addPerson("students", personData);
+      } else {
+        await addPerson("teachers", personData);
+      }
+
+      // close popup, passes state back to parent
+      closePopup(prevState => !prevState);
+    } catch (error) {
+      console.error(error);
+    }
+    
     return 
   }
-
-  useEffect(() => {
-    // create a new student record
-    if (isMounted.current) {
-      const createRecord = async () => {
-        try {
-          if (personData.firstName === "") return;
-
-          if (isStudent) {
-            await addStudent(personData);
-          } else {
-            await addTeacher(personData);
-          }
-
-          // close popup, passes state back to parent
-          closePopup(prevState => !prevState);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      // update an old student record
-      const updateRecord = async () => {
-        if (!isUpdated) return;
-
-        try {
-          if (isStudent) {
-            await updateStudent(personData);
-          } else {
-            await updateTeacher(personData);
-          }
-          closePopup(prevState => !prevState);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      update ? updateRecord() : createRecord();
-    } else {
-      isMounted.current = true;
-    }
-  }, [enter])
 
   return (
     <>
@@ -143,7 +136,7 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           margin: "8px",
           marginTop: "30px"}}
           variant="contained" 
-          onClick={() => handleSubmit()}
+          onClick={() => {update ? updateRecord() : createRecord()}}
         > 
           {isStudent ? "Save Student" : "Save Teacher"} 
         </Button>
@@ -163,4 +156,5 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
     </>
   );
 }
+
 export default PersonForm
