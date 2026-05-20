@@ -1,11 +1,5 @@
 import "../styling/ClassDirectory.css"
 
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
-import CardActionArea from '@mui/material/CardActionArea';
-
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
 
@@ -17,10 +11,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 import classes from "../utils/classes";
+import { useNavigate } from "react-router-dom";
+import { stepClasses } from "@mui/material";
+import ClassCard from "../components/ClassCard"
 
 const ClassDirectory = () => {
 
-  
   /*
   todo:
   - implement search -> filter by name
@@ -28,6 +24,9 @@ const ClassDirectory = () => {
   - implement delete class -> option to select classes to delete
   - implement view dashboard -> dynamically navigates to class page
   */
+
+  /* navigate to detail class page */
+  const navigate = useNavigate();
 
   return (
     <div className="classdirectory-div">
@@ -54,31 +53,15 @@ const ClassDirectory = () => {
       <ImageList cols={3} gap={8}>
         {classes.map(aClass => (
           // Card background
-          <Card sx={{ "backgroundColor": "#FFFDEB"}}>
-
-            <CardActionArea sx={{display: "flex", "flexDirection": "row", "justifyContent": "space-between"}}>
-              
-              {/* Card text and button */}
-              <CardContent sx={{padding: "2rem"}}>
-                <Typography variant="h5" component="div">
-                  {aClass.className}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {aClass.teacherName}
-                </Typography>
-                <Button sx={{"backgroundColor": "#11578A", "color": "white"}} variant="contained">View Dashboard</Button>
-              </CardContent>
-              
-              {/* Card image */}
-              <CardMedia
-                component="img"
-                height="220"
-                image={aClass.image || "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail"}
-                alt={`Image for ${aClass.className} class`}
-                sx={{"width": 120}}
-              />
-            </CardActionArea>
-          </Card>
+          <ClassCard
+            key={aClass.id}
+            className={aClass.className}
+            teacherName={aClass.teacherName}
+            image={aClass.image}
+            onView={() =>
+              navigate(`/class-directory/${aClass.id}`)
+            }
+          />
         ))}
       </ImageList>
     </div>

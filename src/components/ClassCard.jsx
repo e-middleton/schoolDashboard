@@ -1,20 +1,41 @@
 import Card from '@mui/material/Card';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import classes from "../utils/classes";
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import CardActionArea from '@mui/material/CardActionArea';
+import Button from '@mui/material/Button';
 
-const CardCard = ( {className, teacherName, image} ) => {
+const default_image = "https://kidsparkeducation.org/hubfs/stem-elementary-school-kid-spark-education.jpg"
+const ClassCard = ( {className, teacherName, image, onView} ) => {
   return (
-    <Card>
-      <ListItem >
-        <div>
-          <ListItemText
-            primary={ className }
-            secondary={ teacherClass }>
-          </ListItemText>
-        </div>
-      </ListItem>
+    <Card sx={{ "backgroundColor": "#FFFDEB"}}>
+      <CardActionArea sx={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+        {/* Card text and button */}
+        <CardContent sx={{padding: "2rem"}}>
+          <Typography variant="h5" component="div">
+            { className }
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            { teacherName }
+          </Typography>
+          <Button 
+            sx={{"backgroundColor": "#11578A", "color": "white"}} 
+            variant="contained"
+            onClick={onView}>
+            View Dashboard
+          </Button>
+        </CardContent>
+              
+        {/* Card image */}
+        <CardMedia
+          component="img"
+          height="220"
+          image={default_image || "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail"}
+          alt={`Image for ${className} class`}
+          sx={{"width": 120}}
+        />
+      </CardActionArea>
     </Card>
   );
-}
-export default CardCard
+};
+export default ClassCard
