@@ -31,7 +31,7 @@
 
 .class-list {
   height: 60px;
-  width: 210px;
+  width: 100%;
   margin: 8px;
   overflow: auto;
   box-shadow: 2px 2px 12px 1px #d2d2d2;
@@ -65,14 +65,16 @@
   
 .person-form {
   display: grid;
-  grid-template-rows: 1fr 6fr 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 6fr 0.5fr;
   place-items: center;
+  justify-content: center;
   position: absolute; /* Takes the div out of the flow */
-  top: 40%;         /* position in screen center */
+  top: 45%;         /* position in screen center */
   left: 50%; 
   transform: translate(-50%, -50%);       
   z-index: 3; /* this one overlays the background */
-  height: 500px;
+  height: 550px;
   width: 500px;
   border-radius: 10px;
   box-shadow: 2px 2px 12px 1px #d2d2d2;
