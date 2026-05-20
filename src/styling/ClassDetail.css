@@ -1,0 +1,36 @@
+.search-bar {
+  background-color: rgb(206, 206, 206);
+  width: 30vw;
+  padding: 0.25rem 1rem;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #d6d0b0;
+  transition: box-shadow 0.2s;
+}
+
+.search-bar:focus-within {
+  box-shadow: 0 0 0 2px #11578A44;
+}
+
+.classdetail {
+  background-color: #FAFAF2;
+  min-height: 100vh;
+}
+
+.classdetail img {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.classdetail .MuiCard-root {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #e8e4cc;
+  border-radius: 8px !important;
+}
+
+.classdetail .MuiCard-root + .MuiCard-root {
+  margin-top: 0.6rem;
+}
