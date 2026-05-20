@@ -66,7 +66,7 @@ const StudentDirectory = () => {
             </Box>
 
             {/* List of Students */}
-            <div className="student-list">
+            <div className="people-list">
               <List sx={{
                 width: '100%',
                 position: 'relative',
@@ -115,8 +115,8 @@ const StudentDirectory = () => {
       </section>
 
       {addNewStudent || updateStudent ? 
-        <div className="new-student">
-          <div className="new-student-form">
+        <div className="form-overlay">
+          <div className="person-form">
             <StudentForm 
             message={addNewStudent ? "New Student Form" : "Update Student"}
             defaultInfo={addNewStudent ? {firstName: "", lastName: "", class: ""} : defaultInfo}
