@@ -7,22 +7,20 @@ import { fetchAllStudents } from "../utils/students";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import StudentForm from '../components/StudentForm';
+import PersonForm from '../components/PersonForm';
 
 const StudentDirectory = () => {
   const [students, setStudents] = useState([]);
   const [addNewStudent, setAddNewStudent] = useState(false);
   const [updateStudent, setUpdateStudent] = useState(false);
-  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", class: "", id: ""});
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
 
   // fetch database (happens with each reload)
   useEffect(() => {
 
     const fetchData = async () => {
       try {
-        console.log("testing");
         const data = await fetchAllStudents();
-        console.log(data);
         setStudents(data);
 
       } catch (error) {
@@ -34,13 +32,15 @@ const StudentDirectory = () => {
   }, [addNewStudent, updateStudent]);
 
   const handleStudentUpdate = (student) => {
-    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, class: student.class, id: student.id});
+    // function to get classes associated with classIDs
+    const classes = [{name: "Bio", id: "2"}]
+    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, classes: classes, id: student.id});
     setUpdateStudent(prevState => !prevState);
   }
 
   return (
     <>
-      <section className={`page ${addNewStudent ? "blurred" : ""}`}>
+      <section className="page">
         <div className="directory-content">
           <div className="half-content">
             
@@ -78,7 +78,7 @@ const StudentDirectory = () => {
                   <ListItem key={student.id}>
                       <ListItemText
                         primary={ `${student.firstName} ${student.lastName}` }
-                        secondary={ student.class }>
+                      >
                       </ListItemText>
                       <Button 
                       sx={{backgroundColor:"#3877A6"}}
@@ -117,9 +117,10 @@ const StudentDirectory = () => {
       {addNewStudent || updateStudent ? 
         <div className="form-overlay">
           <div className="person-form">
-            <StudentForm 
+            <PersonForm
+            isStudent={true} 
             message={addNewStudent ? "New Student Form" : "Update Student"}
-            defaultInfo={addNewStudent ? {firstName: "", lastName: "", class: ""} : defaultInfo}
+            defaultInfo={addNewStudent ? {firstName: "", lastName: "", classes: []} : defaultInfo}
             closePopup={addNewStudent ? setAddNewStudent : setUpdateStudent}
             update={addNewStudent ? false : true}
             />
