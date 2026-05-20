@@ -1,3 +1,6 @@
+import { doc, addDoc, deleteDoc, updateDoc, collection, getDocs } from "firebase/firestore";
+import {db} from "../../firebase.js";
+
 const classes = [
     {
     id: 001,
@@ -29,4 +32,12 @@ const classes = [
 }
 ];
 
-export default classes;
+// function for grabbing all docs in the classes collection
+const fetchAllClasses = async () => {
+  const querySnapshot = await getDocs(collection(db, "classes"));
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+
+
+export { classes, fetchAllClasses };
