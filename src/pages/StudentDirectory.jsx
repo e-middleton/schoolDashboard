@@ -1,29 +1,30 @@
-import './../styling/StudentDirectory.css';
+import './../styling/SearchPage.css';
 import playground from '../assets/playground.png';
 import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
-import { fetchAllStudents } from "../utils/students";
+import { fetchAllPeople } from "../utils/people";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import StudentForm from '../components/StudentForm';
+import PersonForm from '../components/PersonForm';
 
 const StudentDirectory = () => {
-  const [students, setStudents] = useState([]);
   const [addNewStudent, setAddNewStudent] = useState(false);
   const [updateStudent, setUpdateStudent] = useState(false);
-  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", class: "", id: ""});
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+  const [searchName, setSearchName] = useState("");
+  const [allStudents, setAllStudents] = useState([]);
+
+  const students = allStudents.filter((student) => `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
   // fetch database (happens with each reload)
   useEffect(() => {
 
     const fetchData = async () => {
       try {
-        console.log("testing");
-        const data = await fetchAllStudents();
-        console.log(data);
-        setStudents(data);
+        const data = await fetchAllPeople("students");
+        setAllStudents(data);
 
       } catch (error) {
         console.error("Failed to fetch student records:", error);
@@ -34,13 +35,15 @@ const StudentDirectory = () => {
   }, [addNewStudent, updateStudent]);
 
   const handleStudentUpdate = (student) => {
-    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, class: student.class, id: student.id});
+    // function to get classes associated with classIDs
+    const classes = [{name: "Bio", id: "2"}]
+    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, classes: classes, id: student.id});
     setUpdateStudent(prevState => !prevState);
   }
 
   return (
     <>
-      <section className={`page ${addNewStudent ? "blurred" : ""}`}>
+      <section className="page">
         <div className="directory-content">
           <div className="half-content">
             
@@ -54,7 +57,9 @@ const StudentDirectory = () => {
                 fullWidth
                 label="Student Name"
                 placeholder="Jane Doe"
-                // onChange={(e) => onNameChange(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                
                 slotProps={{
                   input: {
                   endAdornment: <InputAdornment position="end">
@@ -66,7 +71,7 @@ const StudentDirectory = () => {
             </Box>
 
             {/* List of Students */}
-            <div className="student-list">
+            <div className="people-list">
               <List sx={{
                 width: '100%',
                 position: 'relative',
@@ -78,7 +83,7 @@ const StudentDirectory = () => {
                   <ListItem key={student.id}>
                       <ListItemText
                         primary={ `${student.firstName} ${student.lastName}` }
-                        secondary={ student.class }>
+                      >
                       </ListItemText>
                       <Button 
                       sx={{backgroundColor:"#3877A6"}}
@@ -115,11 +120,12 @@ const StudentDirectory = () => {
       </section>
 
       {addNewStudent || updateStudent ? 
-        <div className="new-student">
-          <div className="new-student-form">
-            <StudentForm 
+        <div className="form-overlay">
+          <div className="person-form" style={{gridTemplateRows: addNewStudent ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>
+            <PersonForm
+            isStudent={true} 
             message={addNewStudent ? "New Student Form" : "Update Student"}
-            defaultInfo={addNewStudent ? {firstName: "", lastName: "", class: ""} : defaultInfo}
+            defaultInfo={addNewStudent ? {firstName: "", lastName: "", classes: []} : defaultInfo}
             closePopup={addNewStudent ? setAddNewStudent : setUpdateStudent}
             update={addNewStudent ? false : true}
             />
