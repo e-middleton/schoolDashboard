@@ -46,7 +46,7 @@ const router = createBrowserRouter([
         element: <ClassDetail />
       },
       {
-        path: "/grades/:studentID",
+        path: "/grades/:classID/:studentID",
         element: <GradeManagement />
       }
     ],
