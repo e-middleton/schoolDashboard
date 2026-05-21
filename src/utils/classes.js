@@ -13,7 +13,6 @@ const classes = [
         "student3",
         "student4",
         "student5",
-        
     ],
 },
 {
@@ -27,7 +26,6 @@ const classes = [
         "student8",
         "student9",
         "student10",
-        
     ],
 }
 ];
