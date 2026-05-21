@@ -1,4 +1,8 @@
 import {Box, List, ListItem, TextField, Button, MenuItem }from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs'
 import "../styling/SearchPage.css";
 import { addPerson, updatePerson, deletePerson } from '../utils/people';
 import { useState } from 'react'; 
@@ -7,7 +11,7 @@ import { NavLink } from 'react-router-dom';
 
 const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePopup} ) => {
   const [personData, setPersonData] = useState(defaultInfo);
-  const [errors, setErrors] = useState({one: false, two: false, three: false})
+  const [errors, setErrors] = useState({one: false, two: false, three: false, four: false})
   const errMessage = "Required Field";
 
   const deleteRecord = async () => {
@@ -34,18 +38,21 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     // input validation
     let err1 = false;
     let err2 = false;
+    let err4 = false; // dob
 
     if (personData.firstName === "" ) {
       err1 = true;
     } else if (personData.lastName === "" ) {
       err2 = true;
+    } else if (personData.dateOfBirth === null) {
+      err4 = true;
     }
-    setErrors({one: err1, two: err2});
+    setErrors({one: err1, two: err2, four: err4});
 
-    if ( err1 || err2 ) return;
+    if ( err1 || err2 || err4) return;
 
     // clear out error messages
-    setErrors({one: false, two: false});
+    setErrors({one: false, two: false, four: false});
 
     try {
       if (isStudent) {
@@ -64,10 +71,11 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
   }
 
   const createRecord = async () => {
-    // input validation [firstName, lastName, role, date_of_birth] are all REQUIRED
+    // input validation [firstName, lastName, role, dateOfBirth] are all REQUIRED
     let err1 = false;
     let err2 = false;
     let err3 = false;
+    let err4 = false;
 
     if (personData.firstName === "" ) {
       err1 = true;
@@ -75,13 +83,15 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       err2 = true;
     } else if (personData.role === "") {
       if (!isStudent) err3 = true; // students roles are always student
+    } else if (personData.dateOfBirth === null) {
+      err4 = true;
     }
-    setErrors({one: err1, two: err2, three: err3});
+    setErrors({one: err1, two: err2, three: err3, four: err4});
 
-    if ( err1 || err2 || err3) return;
+    if ( err1 || err2 || err3 || err4) return;
 
     // clear out error messages
-    setErrors({one: false, two: false, three: false});
+    setErrors({one: false, two: false, three: false, four: false});
 
     try {
       if (personData.firstName === "") return;
@@ -135,6 +145,28 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
           helperText={errors.two ? errMessage : ""}
           onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
         />
+        {/* field for date of birth */}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+          sx={{
+            margin: "0.5rem",
+            maxWidth: "75%",
+          }}
+            slotProps={{
+              textField: {
+                required: true, 
+                error: errors.four,
+                helperText: errors.four ? errMessage : "",
+              },
+            }}
+            label="Date of Birth"
+            value={personData.dateOfBirth
+              ? dayjs(personData.dateOfBirth)
+              : null}
+            onChange={(newValue) => {
+              setPersonData({...personData, dateOfBirth: newValue})}}
+          />
+        </LocalizationProvider>
 
         {/* assigned classes (not included with admin profiles) */}
         {update && !isAdmin ? 

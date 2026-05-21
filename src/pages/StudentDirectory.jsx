@@ -9,11 +9,12 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import PersonForm from '../components/PersonForm';
+import dayjs from 'dayjs';
 
 const StudentDirectory = () => {
   const [addNewStudent, setAddNewStudent] = useState(false);
   const [updateStudent, setUpdateStudent] = useState(false);
-  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], classIDs: [], id: "", role: "student", dateOfBirth: dayjs()});
   const [searchName, setSearchName] = useState("");
   const [allStudents, setAllStudents] = useState([]);
 
