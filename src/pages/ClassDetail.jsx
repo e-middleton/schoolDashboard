@@ -13,7 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-import classes from "../utils/classes";
+import { classes } from "../utils/classes";
 import { useNavigate } from "react-router-dom";
 import { stepClasses } from "@mui/material";
 import ClassCard from "../components/ClassCard"
