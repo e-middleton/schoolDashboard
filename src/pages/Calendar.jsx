@@ -258,6 +258,33 @@ const Calendar = () => {
     [selectedDate],
   );
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchResults = useMemo(() => {
+    const q = String(searchQuery || '').trim().toLowerCase();
+    if (!q) return [];
+
+    return calendarEvents
+      .filter((ev) => {
+        const name = (ev.eventName || ev.title || '').toLowerCase();
+        const loc = (ev.location || '').toLowerCase();
+        const desc = (ev.description || '').toLowerCase();
+        const date = (ev.date || '').toLowerCase();
+
+        return name.includes(q) || loc.includes(q) || desc.includes(q) || date.includes(q);
+      })
+      .sort((a, b) => {
+        const dateCmp = (a.date || '').localeCompare(b.date || '');
+        if (dateCmp !== 0) return dateCmp;
+        return (parseTimeToMinutes(a.startTime) || 0) - (parseTimeToMinutes(b.startTime) || 0);
+      });
+  }, [searchQuery, eventsVersion]);
+
+  const highlightedDates = useMemo(() => {
+    if (!searchQuery) return new Set();
+    return new Set(searchResults.map((ev) => ev.date));
+  }, [searchQuery, searchResults]);
+
   const updateSelectedDate = (offsetDays) => {
     setSelectedDate((currentDate) => {
       const nextDate = new Date(currentDate);
@@ -391,50 +418,95 @@ const Calendar = () => {
     </div>
   );
 
+  const renderNewEventButton = () => (
+    <Button
+      variant="contained"
+      onClick={() => {
+        setIsCreating(true);
+        setSelectedEvent(null);
+        setSelectedDayEvents(null);
+        setSelectedEventSource(null);
+        resetCreateForm();
+      }}
+      sx={{ backgroundColor: '#11578A', color: 'white', textTransform: 'none', ml: 1 }}
+    >
+      New Event
+    </Button>
+  );
+
   const renderCalendarControls = () => (
-    <div className="calendar-actions">
-      <Button
-        variant="contained"
-        onClick={() => {
-          setIsCreating(true);
-          setSelectedEvent(null);
-          setSelectedDayEvents(null);
-          setSelectedEventSource(null);
-          resetCreateForm();
-        }}
-        sx={{ backgroundColor: '#11578A', color: 'white', textTransform: 'none' }}
-      >
-        New Event
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={() => updateSelectedDateByView(-1)}
-        sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
-      >
-        &lt;
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={jumpToToday}
-        sx={{ borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
-      >
-        Today
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={() => updateSelectedDateByView(1)}
-        sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
-      >
-        &gt;
-      </Button>
-    </div>
+    <>
+      <div className="calendar-actions">
+        <div className="calendar-search-wrap">
+          <TextField
+            size="small"
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ minWidth: 220, mr: 1 }}
+            inputProps={{ 'aria-label': 'Search events' }}
+          />
+
+          {searchQuery ? (
+            <div className="calendar-search-dropdown">
+              {searchResults.length === 0 ? (
+                <div className="calendar-search-empty">No results</div>
+              ) : searchResults.map((ev) => (
+                <div
+                  key={`${ev.date}-${ev.eventName || ev.title}-${ev.startTime}`}
+                  className="calendar-search-result"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setSelectedEventDocId(getEventDocId(ev));
+                    setSelectedEvent(ev);
+                    setSelectedEventSource('search');
+                    setSearchQuery('');
+                  }}
+                >
+                  <div>
+                    <strong>{ev.eventName || ev.title}</strong>
+                    <div style={{ fontSize: 12, color: '#666' }}>{ev.date} • {ev.startTime}</div>
+                  </div>
+                  <div style={{ color: ev.color, minWidth: 12, height: 12 }} />
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <Button
+          variant="outlined"
+          onClick={() => updateSelectedDateByView(-1)}
+          sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
+        >
+          &lt;
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={jumpToToday}
+          sx={{ borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
+        >
+          Today
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => updateSelectedDateByView(1)}
+          sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
+        >
+          &gt;
+        </Button>
+      </div>
+
+      {/* dropdown moved into the search wrapper so it doesn't push layout */}
+    </>
   );
 
   const renderDayContent = () => (
-    <div className="calendar-panel calendar-day-panel">
+    <div className={`calendar-panel calendar-day-panel ${highlightedDates.has(toDateKey(selectedDate)) ? 'is-highlighted' : ''}`}>
       <div className="calendar-panel-header">
         <div className="calendar-panel-left">
           {renderViewSwitcher()}
+          {renderNewEventButton()}
         </div>
         <div className="calendar-panel-date">
           <h2>{formatLongDate(selectedDate)}</h2>
@@ -480,6 +552,7 @@ const Calendar = () => {
       <div className="calendar-panel-header">
         <div className="calendar-panel-left">
           {renderViewSwitcher()}
+          {renderNewEventButton()}
         </div>
         <div className="calendar-panel-date">
           <h2>{formatLongDate(selectedDate)}</h2>
@@ -493,11 +566,12 @@ const Calendar = () => {
         {weekDates.map((weekDate) => {
           const dayEvents = getEventsForDate(weekDate);
           const isSelected = isSameDay(weekDate, selectedDate);
+          const isHighlighted = highlightedDates.has(toDateKey(weekDate));
 
           return (
             <button
               type="button"
-              className={`calendar-day-column ${isSelected ? 'is-selected' : ''}`}
+              className={`calendar-day-column ${isSelected ? 'is-selected' : ''} ${isHighlighted ? 'is-highlighted' : ''}`}
               onClick={() => setSelectedDate(weekDate)}
               onDoubleClick={() => openCreateDrawerForDate(weekDate)}
               key={toDateKey(weekDate)}
@@ -542,6 +616,7 @@ const Calendar = () => {
       <div className="calendar-panel-header">
         <div className="calendar-panel-left">
           {renderViewSwitcher()}
+          {renderNewEventButton()}
         </div>
         <div className="calendar-panel-date">
           <h2>{formatLongDate(selectedDate)}</h2>
@@ -560,10 +635,11 @@ const Calendar = () => {
           const dayEvents = getEventsForDate(monthDate);
           const isCurrentMonth = monthDate.getMonth() === selectedDate.getMonth();
           const isSelected = isSameDay(monthDate, selectedDate);
+          const isHighlighted = highlightedDates.has(toDateKey(monthDate));
 
           return (
             <div
-              className={`calendar-month-cell ${isCurrentMonth ? '' : 'is-faded'} ${isSelected ? 'is-selected' : ''}`}
+              className={`calendar-month-cell ${isCurrentMonth ? '' : 'is-faded'} ${isSelected ? 'is-selected' : ''} ${isHighlighted ? 'is-highlighted' : ''}`}
               onClick={() => setSelectedDate(monthDate)}
               onDoubleClick={() => openCreateDrawerForDate(monthDate)}
               key={toDateKey(monthDate)}
