@@ -9,6 +9,7 @@ const viewOptions = ['day', 'week', 'month'];
 
 const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Generate 15-minute increment time options for dropdown add event form
 const timeOptions = Array.from({ length: 96 }, (_, index) => {
   const totalMinutes = index * 15;
   const hours24 = Math.floor(totalMinutes / 60);
@@ -18,6 +19,7 @@ const timeOptions = Array.from({ length: 96 }, (_, index) => {
   return `${hours12}:${minutes} ${period}`;
 });
 
+// Predefined color options for events
 const colorOptions = [
   { label: 'Blue', value: '#11578A' },
   { label: 'Red', value: '#CE2626' },
@@ -29,6 +31,7 @@ const colorOptions = [
   { label: 'Gray', value: '#6B7280' },
 ];
 
+// Convert string time values to minutes
 const parseTimeToMinutes = (timeValue) => {
   const s = String(timeValue || '').trim().toUpperCase();
 
@@ -45,6 +48,7 @@ const parseTimeToMinutes = (timeValue) => {
     return hours * 60 + minutes;
   }
 
+  // More flexible parsing for common time formats (e.g. 930, 10am, 14)
   // hhmm or hhmmAM/PM (e.g. 930, 0930, 930pm)
   m = s.match(/^(\d{1,2})(\d{2})\s*(AM|PM)?$/i);
   if (m) {
@@ -78,6 +82,7 @@ const parseTimeToMinutes = (timeValue) => {
   return NaN;
 };
 
+// Normalize time input to a consistent format (e.g. 9:00 AM) for display
 const normalizeTimeLabel = (timeValue) => {
   const mins = parseTimeToMinutes(timeValue);
   if (Number.isNaN(mins)) return timeValue;
@@ -89,14 +94,17 @@ const normalizeTimeLabel = (timeValue) => {
   return `${hh12}:${String(mm).padStart(2, '0')} ${period}`;
 };
 
+// Convert date to YYYY-MM-DD format for consistent keying and comparison
 const toDateKey = (date) =>
   [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 
+// Helper function to compare if two dates are the same day for display purposes
 const isSameDay = (leftDate, rightDate) =>
   leftDate.getFullYear() === rightDate.getFullYear()
   && leftDate.getMonth() === rightDate.getMonth()
   && leftDate.getDate() === rightDate.getDate();
 
+// Helper function to format dates in a long, human-friendly format (e.g. Monday, January 1, 2024)
 const formatLongDate = (date) =>
   new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
@@ -105,12 +113,14 @@ const formatLongDate = (date) =>
     year: 'numeric',
   }).format(date);
 
+// Helper function to format dates in a short format (e.g. Jan 1)
 const formatShortDate = (date) =>
   new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
   }).format(date);
 
+// Get events for a specific date, sorted by start time and then name for consistent display purposes
 const getEventsForDate = (date) =>
   calendarEvents
     .filter((event) => event.date === toDateKey(date))
@@ -122,6 +132,8 @@ const getEventsForDate = (date) =>
       return (leftEvent.eventName || leftEvent.title || '').localeCompare(rightEvent.eventName || rightEvent.title || '');
     });
 
+// Build an array of dates for the week view based on a given date 
+// (e.g. if date is Wednesday, return Sunday-Saturday of that week)
 const buildWeekDates = (date) => {
   const startOfWeek = new Date(date);
   startOfWeek.setDate(date.getDate() - date.getDay());
@@ -133,6 +145,7 @@ const buildWeekDates = (date) => {
   });
 };
 
+// Build an array of dates for the month view based on a given date
 const buildMonthDates = (date) => {
   const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
   const startOfGrid = new Date(startOfMonth);
@@ -145,6 +158,7 @@ const buildMonthDates = (date) => {
   });
 };
 
+// Helper function to get an empty event form data object, optionally pre-filling the date (e.g. when clicking "New Event" from a specific day)
 const getEmptyFormData = (date = toDateKey(new Date())) => ({
   eventName: '',
   date,
@@ -155,6 +169,7 @@ const getEmptyFormData = (date = toDateKey(new Date())) => ({
   description: '',
 });
 
+// Main Calendar component
 const Calendar = () => {
   const [activeView, setActiveView] = useState('month');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -168,6 +183,8 @@ const Calendar = () => {
   const [formData, setFormData] = useState(() => getEmptyFormData());
   const [eventsVersion, setEventsVersion] = useState(0);
 
+  // Reset the event creation/editing form to empty values after creating/editing/deleting 
+  // an event or when opening the form for a new event
   const resetCreateForm = (date = toDateKey(selectedDate)) => {
     setFormData(getEmptyFormData(date));
     setCreateErrors({});
@@ -175,6 +192,8 @@ const Calendar = () => {
 
   const getEventDocId = (eventItem) => eventItem.docId || makeEventDocId(eventItem);
 
+  // Delete an event both from Firebase and the in-memory array, and
+  // reset all relevant state to close the edit drawer and clear the selected event
   const deleteEvent = async (eventItem) => {
     const docId = selectedEventDocId || getEventDocId(eventItem);
 
@@ -195,6 +214,7 @@ const Calendar = () => {
     }
   };
 
+  // Open the side panel for creating a new event, pre-filling the date based on the clicked date in the calendar
   const openCreateDrawerForDate = (date) => {
     setSelectedDate(date);
     setSelectedEvent(null);
@@ -206,6 +226,8 @@ const Calendar = () => {
     resetCreateForm(toDateKey(date));
   };
 
+  // Open side panel to view existing event
+  // The form is pre-filled based on the clicked event's details for easier editing
   const openEditDrawer = (eventItem) => {
     const editDate = eventItem.date ? new Date(`${eventItem.date}T00:00:00`) : selectedDate;
 
@@ -228,6 +250,8 @@ const Calendar = () => {
     setCreateErrors({});
   };
 
+  // Get events for the currently selected date
+  // Also run this whenever eventsVersion changes (e.g. after deleting an event) to ensure the display is up to date
   const selectedDateEvents = useMemo(
     () => getEventsForDate(selectedDate),
     [selectedDate, eventsVersion],
@@ -245,6 +269,8 @@ const Calendar = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Search events by event name, location, date and description
+  // Results appear in a dropdown box
   const searchResults = useMemo(() => {
     const q = String(searchQuery || '').trim().toLowerCase();
     if (!q) return [];
@@ -265,6 +291,7 @@ const Calendar = () => {
       });
   }, [searchQuery, eventsVersion]);
 
+  // Highlight matching results
   const highlightedDates = useMemo(() => {
     if (!searchQuery) return new Set();
     return new Set(searchResults.map((ev) => ev.date));
@@ -278,6 +305,8 @@ const Calendar = () => {
     });
   };
 
+  // Update the date when clicking the next/previous buttons based on the current 
+  // calendar setting (e.g. in week view, clicking next adds 7 days)
   const updateSelectedDateByView = (direction) => {
     setSelectedDate((currentDate) => {
       const nextDate = new Date(currentDate);
@@ -299,20 +328,10 @@ const Calendar = () => {
 
   const jumpToToday = () => setSelectedDate(new Date());
 
+  // Keyboard shortcuts for switching calendar views and jumping to today 
+  // "d" for day view, "w" for week view, "m" for month view, "t" for today
   useEffect(() => {
     const handleKeyDown = (event) => {
-      // Temporary debugging logs to trace shortcut handling.
-      // eslint-disable-next-line no-console
-      // console.log('[Calendar shortcut] keydown', {
-      //   key: event.key,
-      //   code: event.code,
-      //   targetTag: event.target && event.target.tagName,
-      //   activeElementTag: document.activeElement && document.activeElement.tagName,
-      //   altKey: event.altKey,
-      //   ctrlKey: event.ctrlKey,
-      //   metaKey: event.metaKey,
-      //   defaultPrevented: event.defaultPrevented,
-      // });
 
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
 
@@ -346,35 +365,24 @@ const Calendar = () => {
 
       if (isTypingField) return;
 
-      // eslint-disable-next-line no-console
-      // console.log('[Calendar shortcut] matched', { shortcut, key, code });
-
       if (shortcut === 'day') {
-        // eslint-disable-next-line no-console
-        // console.log('[Calendar shortcut] switching to day view');
         setActiveView('day');
         event.preventDefault();
         return;
       }
 
       if (shortcut === 'week') {
-        // eslint-disable-next-line no-console
-        // console.log('[Calendar shortcut] switching to week view');
         setActiveView('week');
         event.preventDefault();
         return;
       }
 
       if (shortcut === 'month') {
-        // eslint-disable-next-line no-console
-        // console.log('[Calendar shortcut] switching to month view');
         setActiveView('month');
         event.preventDefault();
         return;
       }
 
-      // eslint-disable-next-line no-console
-      // console.log('[Calendar shortcut] jumping to today');
       jumpToToday();
       event.preventDefault();
     };
@@ -383,11 +391,7 @@ const Calendar = () => {
     return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    // console.log('[Calendar] activeView changed', activeView);
-  }, [activeView]);
-
+  // Reset the selected event and close the side panel when switching between calendar views to avoid confusion
   const renderViewSwitcher = () => (
     <div className="calendar-view-switcher" role="tablist" aria-label="Calendar view">
       {viewOptions.map((viewOption) => (
@@ -403,6 +407,7 @@ const Calendar = () => {
     </div>
   );
 
+  // Button to open side panel for viewing/creating new events
   const renderNewEventButton = () => (
     <Button
       variant="contained"
@@ -419,6 +424,7 @@ const Calendar = () => {
     </Button>
   );
 
+  // Today/next/previous buttons + search bar
   const renderCalendarControls = () => (
     <>
       <div className="calendar-actions">
@@ -486,6 +492,7 @@ const Calendar = () => {
     </>
   );
 
+  // Render the main calendar panel
   const renderDayContent = () => (
     <div className={`calendar-panel calendar-day-panel ${highlightedDates.has(toDateKey(selectedDate)) ? 'is-highlighted' : ''}`}>
       <div className="calendar-panel-header">
