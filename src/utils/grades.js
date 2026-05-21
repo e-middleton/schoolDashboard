@@ -24,11 +24,8 @@ const categoryToProperty = {
 
 // retrieve all grade records from the database for a specified **class and **student
 const fetchGradeDocument = async (targetClassID, targetStudentID) => {
-  console.log("fetching grade document");
   const querySnapshot = await getDocs(collection(db, "grades"));
   const parsedSnapshot = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
-
-  console.log(parsedSnapshot);
 
   // Search by class and student
   const matchingGradeDocument = parsedSnapshot.find((grade) => 

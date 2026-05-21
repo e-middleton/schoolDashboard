@@ -2,6 +2,7 @@ import "../styling/GradeManagement.css"
 import { fetchGradeDocument, createGradeDocument } from "../utils/grades.js"
 
 import GradeForm from "../components/GradeForm.jsx"
+import AccordianDropdown from "../components/AccordianDropdown.jsx"
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router'
@@ -15,36 +16,30 @@ import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import EditIcon from '@mui/icons-material/Edit';
-
-// Accordian
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 
 const GradeManagement = () => {
   
   /*
   todo:
-  - refactor components
+  - (done) refactor components
       - (done) removed unused mui imports
   - add comments
 
   - interactive
-    - dynamically show category and grades
+    - (done) dynamically show category and grades
     - (done) dynamically show category in options for new grade
     - (done) show and hide new grade
   - validate grade input; error message
     - make all fields required
     - prevent typing non-numbers
     - assignment name
-  - success state, clear form, if time: open accordian and scroll down
+  - (done) success state, clear form
 
   ----------
   - edit grade
   - delete grade
   - navigation: params, back button (class page), need to know which class came from
+  - get + display class name, class ID
   -----------
   - ignore: grade calculation algorithm
   if time: add search bar for assignments (?)
@@ -104,7 +99,7 @@ const GradeManagement = () => {
         {!gradeFormShown &&
           <>
             <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} variant="contained" endIcon={<AddIcon />}
-            onClick={() => setGradeFormShown(true)}>
+            onClick={() => {setGradeFormShown(true); setMessage("")}}>
               Add Grade
             </Button>
             {
@@ -113,36 +108,19 @@ const GradeManagement = () => {
           </>
         }
 
-        {/* List of Accordians */}
+        {/* List of Accordians for Grade Categories */}
         <Grid container spacing={1}>
-          {/* Accordian Row */}
-          <Accordion disableGutters
-            sx={{
-              "width": "100%",
-              "backgroundColor": "#FFFDEB", 
-              "borderRadius": 2
-            }}>
-
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-            >
-              <Typography component="span">Quizzes</Typography>
-            </AccordionSummary>
-
-            <AccordionDetails>
-              <Grid container spacing={0.5}>
-                <Card sx={{"boxShadow": "none", "flexGrow": 1, "bgcolor": "#F5F3E4", padding: "1rem", "width": "auto", "display": "flex", "justifyContent": "space-between", "flexDirection": "row"}}>
-                  <p>Quiz 1</p>
-                  <p>95/100</p>
-                </Card>
-                  <Button sx={{"backgroundColor": "#11578A", "color": "white"}} startIcon={<EditIcon />} variant="contained">Edit</Button>
-                  <Button sx={{"backgroundColor": "#CE2626", "color": "white"}} variant="contained" startIcon={<DeleteIcon />}>Delete</Button>
-                <Grid container space={1}>
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-
-          </Accordion>
+          {/* Quizzes */}
+          <AccordianDropdown label={"Quizzes"} contentList={gradeData["quizGrades"]} setMessage={setMessage}/>
+          
+          {/* Participation */}
+          <AccordianDropdown label={"Participation"} contentList={gradeData["participationGrades"]} setMessage={setMessage}/>
+          
+          {/* Projects */}
+          <AccordianDropdown label={"Projects"} contentList={gradeData["projectGrades"]} setMessage={setMessage}/>
+          
+          {/* Tests */}
+          <AccordianDropdown label={"Tests"} contentList={gradeData["testGrades"]} setMessage={setMessage}/>
         </Grid>
 
       </Grid>
