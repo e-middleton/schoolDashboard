@@ -1,22 +1,46 @@
-import './../styling/StudentDirectory.css';
+import './../styling/SearchPage.css';
 import playground from '../assets/playground.png';
-import {List, Box, TextField, Button, InputAdornment }from '@mui/material';
-import StudentCard from '../components/StudentCard';
+import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-
-// temporary student info for testing
-const studentNames = ["name1", "name2", "name3", "name4", "name5", "name6", "name7", "name8", "name9"];
-const studentClasses = ["class1", "class2", "class3", "class4", "class5", "class6", "class7", "class8", "class9"];
-
-const students = studentNames.map((student,index) => {
-  const entry = {
-    name: student ,
-    class: studentClasses[index],
-  }
-  return entry;
-});
+import { useEffect, useState } from 'react';
+import { fetchAllPeople } from "../utils/people";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import PersonForm from '../components/PersonForm';
 
 const StudentDirectory = () => {
+  const [addNewStudent, setAddNewStudent] = useState(false);
+  const [updateStudent, setUpdateStudent] = useState(false);
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+  const [searchName, setSearchName] = useState("");
+  const [allStudents, setAllStudents] = useState([]);
+
+  const students = allStudents.filter((student) => `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
+
+  // fetch database (happens with each reload)
+  useEffect(() => {
+
+    const fetchData = async () => {
+      try {
+        const data = await fetchAllPeople("students");
+        setAllStudents(data);
+
+      } catch (error) {
+        console.error("Failed to fetch student records:", error);
+      }
+    };
+
+    fetchData();
+  }, [addNewStudent, updateStudent]);
+
+  const handleStudentUpdate = (student) => {
+    // function to get classes associated with classIDs
+    const classes = [{name: "Bio", id: "2"}]
+    setDefaultInfo({firstName: student.firstName, lastName: student.lastName, classes: classes, id: student.id});
+    setUpdateStudent(prevState => !prevState);
+  }
+
   return (
     <>
       <section className="page">
@@ -33,7 +57,9 @@ const StudentDirectory = () => {
                 fullWidth
                 label="Student Name"
                 placeholder="Jane Doe"
-                // onChange={(e) => onNameChange(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                
                 slotProps={{
                   input: {
                   endAdornment: <InputAdornment position="end">
@@ -45,7 +71,7 @@ const StudentDirectory = () => {
             </Box>
 
             {/* List of Students */}
-            <div className="student-list">
+            <div className="people-list">
               <List sx={{
                 width: '100%',
                 position: 'relative',
@@ -53,8 +79,20 @@ const StudentDirectory = () => {
                 '& ul': { padding: 0 },
               }} >
                 {/* Map the students to list elements */}
-                {students.map( (student, index)  => (
-                  <StudentCard studentName={student.name} studentClass={student.class} key={index}/>
+                {students.map( (student)  => (
+                  <ListItem key={student.id}>
+                      <ListItemText
+                        primary={ `${student.firstName} ${student.lastName}` }
+                      >
+                      </ListItemText>
+                      <Button 
+                      sx={{backgroundColor:"#3877A6"}}
+                      variant="contained"
+                      onClick={() => handleStudentUpdate(student)}
+                      >
+                        Update
+                      </Button>
+                  </ListItem>
                 ))}
               </List>
             </div>
@@ -62,19 +100,51 @@ const StudentDirectory = () => {
 
           {/* Image and Add Student Button */}
           <div className="half-content">
-            <Button
-            sx={{
-              backgroundColor:"#ce2626", 
-              color: "white",
-              width: 'fit-content',
-              marginBottom: "20px",
-              textTransform: 'none'}}>
+            <Button 
+              sx={{
+                "backgroundColor": "#ce2626", 
+                "color": "white", 
+                width: 'fit-content',
+                marginBottom: "20px",
+                marginTop: "10px"}
+              } 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              onClick={() => setAddNewStudent(prevState => !prevState)}
+            >
               Add Student
             </Button>
             <img className="image" src={playground} alt="School Playground Image" />
           </div>
         </div>
       </section>
+
+      {addNewStudent || updateStudent ? 
+        <div className="form-overlay">
+          <div className="person-form" style={{gridTemplateRows: addNewStudent ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>
+            <PersonForm
+            isStudent={true} 
+            message={addNewStudent ? "New Student Form" : "Update Student"}
+            defaultInfo={addNewStudent ? {firstName: "", lastName: "", classes: []} : defaultInfo}
+            closePopup={addNewStudent ? setAddNewStudent : setUpdateStudent}
+            update={addNewStudent ? false : true}
+            />
+            
+            {/* exit button */}
+            <IconButton
+              onClick={() => {addNewStudent ? setAddNewStudent(prevState => !prevState) : setUpdateStudent(prevState => !prevState)}}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+        </div>
+      : null }
     </>
   );
 }
