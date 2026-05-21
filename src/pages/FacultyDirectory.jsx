@@ -8,6 +8,7 @@ import desk from "../assets/desk.png";
 import { fetchAllPeople } from "../utils/people";
 import { fetchAllClasses } from "../utils/classes";
 import PersonForm from '../components/PersonForm';
+import dayjs from 'dayjs';
 
 const FacultyDirectory = () => {
   const [allTeachers, setAllTeachers] = useState([]);
@@ -15,7 +16,7 @@ const FacultyDirectory = () => {
   const [addNewFaculty, setAddNewFaculty] = useState(false);
   const [updateFaculty, setUpdateFaculty] = useState(false);
   const [searchName, setSearchName] = useState("");
-  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], id: ""});
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], classIDs: [], dateOfBirth: dayjs(), id: ""});
   const [isAdmin, setIsAdmin] = useState(false);
 
   const teachers = allTeachers.filter((teacher) => `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
@@ -46,7 +47,6 @@ const FacultyDirectory = () => {
           }
 
           return record;
-
         })
         setAllTeachers(teacherData);
         setAllAdmin(data2);
@@ -169,7 +169,9 @@ const FacultyDirectory = () => {
       {/* popup to add or edit faculty records */}
       {addNewFaculty || updateFaculty ? 
         <div className="form-overlay">
-          <div className="person-form" style={{gridTemplateRows: addNewFaculty ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>
+          <div className="person-form" style={{gridTemplateRows: addNewFaculty ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr',
+            height: addNewFaculty || isAdmin ? '35rem' : '40rem',
+          }}>
             <PersonForm
             isStudent={false} 
             isAdmin={isAdmin}
