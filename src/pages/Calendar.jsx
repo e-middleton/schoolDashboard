@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button, Drawer, Box, Typography, TextField, Autocomplete, MenuItem } from '@mui/material';
-import { setDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase.js';
 
-import { calendarEvents } from '../utils/events';
+import { calendarEvents, deleteCalendarEvent, makeEventDocId, saveCalendarEvent } from '../utils/events';
 import '../styling/Calendar.css';
 
 const viewOptions = ['day', 'week', 'month'];
@@ -175,27 +173,14 @@ const Calendar = () => {
     setCreateErrors({});
   };
 
-  const getEventDocId = (eventItem) => eventItem.docId || `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  const getEventDocId = (eventItem) => eventItem.docId || makeEventDocId(eventItem);
 
   const deleteEvent = async (eventItem) => {
     const docId = selectedEventDocId || getEventDocId(eventItem);
 
     try {
-      await deleteDoc(doc(db, 'events', docId));
-
-      import('../utils/events').then((mod) => {
-        if (mod.calendarEvents && Array.isArray(mod.calendarEvents)) {
-          const existingIndex = mod.calendarEvents.findIndex((calendarEvent) => getEventDocId(calendarEvent) === docId);
-          if (existingIndex >= 0) {
-            mod.calendarEvents.splice(existingIndex, 1);
-          }
-        }
-      }).finally(() => {
-        setEventsVersion((v) => v + 1);
-      });
+      await deleteCalendarEvent(eventItem, docId);
+      setEventsVersion((v) => v + 1);
 
       setSelectedEvent(null);
       setSelectedEventDocId(null);
@@ -894,29 +879,11 @@ const Calendar = () => {
                               description: formData.description,
                             };
 
-                            const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
-                              .toLowerCase()
-                              .replace(/[^a-z0-9]+/g, '-')
-                              .replace(/^-+|-+$/g, '');
                             const docId = isEditing && selectedEventDocId ? selectedEventDocId : makeEventDocId(savedEvent);
 
                             try {
-                              await setDoc(doc(db, 'events', docId), savedEvent);
-                              // update in-memory list and refresh
-                              // eslint-disable-next-line no-use-before-define
-                              import('../utils/events').then((mod) => {
-                                if (mod.calendarEvents && Array.isArray(mod.calendarEvents)) {
-                                  const nextEvent = { ...savedEvent, docId };
-                                  const existingIndex = mod.calendarEvents.findIndex((eventItem) => getEventDocId(eventItem) === docId);
-                                  if (existingIndex >= 0) {
-                                    mod.calendarEvents[existingIndex] = nextEvent;
-                                  } else {
-                                    mod.calendarEvents.push(nextEvent);
-                                  }
-                                }
-                              }).finally(() => {
-                                setEventsVersion((v) => v + 1);
-                              });
+                              await saveCalendarEvent(savedEvent, docId);
+                              setEventsVersion((v) => v + 1);
                               setIsCreating(false);
                               setIsEditing(false);
                               setSelectedEventDocId(docId);
