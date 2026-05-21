@@ -1,7 +1,8 @@
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase.js';
 
+// Mock data for calendar events. For testing/demo purposes
 export const calendarEvents = [
 	{
 		eventName: 'Library Visit',
@@ -115,6 +116,7 @@ export const calendarEvents = [
 	},
 ];
 
+// Helper function to convert time string to minutes for duration calculation
 const parseTimeToMinutes = (timeStr) => {
 	const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
  	if (!match) return 0;
@@ -126,6 +128,7 @@ const parseTimeToMinutes = (timeStr) => {
  	return h * 60 + m;
 };
 
+// Helper function to compute duration string from start and end times
 const computeDurationStr = (start, end) => {
  	const diff = parseTimeToMinutes(end) - parseTimeToMinutes(start);
  	if (diff <= 0) return '0m';
@@ -134,14 +137,53 @@ const computeDurationStr = (start, end) => {
  	return `${hrs > 0 ? `${hrs}h${mins > 0 ? ' ' : ''}` : ''}${mins > 0 ? `${mins}m` : ''}`.trim();
 };
 
-// (Events are already in the requested normalized shape)
 
-
-const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
+// Generate Firestore-safe document ID based on event properties
+// Helpful for insert/delete operations
+export const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
 	.toLowerCase()
 	.replace(/[^a-z0-9]+/g, '-')
 	.replace(/^-+|-+$/g, '');
 
+// Update existing events or insert new events in the in-memory array (not the Firebase collection)
+const upsertCalendarEventInMemory = (eventItem, docId) => {
+	const nextEvent = { ...eventItem, docId };
+	const existingIndex = calendarEvents.findIndex((calendarEvent) => makeEventDocId(calendarEvent) === docId);
+
+	if (existingIndex >= 0) {
+		calendarEvents[existingIndex] = nextEvent;
+	} else {
+		calendarEvents.push(nextEvent);
+	}
+
+	return nextEvent;
+};
+
+// Delete events from the in-memory array (not the Firebase collection)
+const removeCalendarEventInMemory = (docId) => {
+	const existingIndex = calendarEvents.findIndex((calendarEvent) => makeEventDocId(calendarEvent) === docId);
+
+	if (existingIndex >= 0) {
+		calendarEvents.splice(existingIndex, 1);
+	}
+};
+
+
+// Upsert (update or insert) a calendar event in Firebase and in-memory array
+export const saveCalendarEvent = async (eventItem, docId = makeEventDocId(eventItem)) => {
+	await setDoc(doc(db, 'events', docId), eventItem);
+	return upsertCalendarEventInMemory(eventItem, docId);
+};
+
+// Delete a calendar event from Firebase and in-memory array
+export const deleteCalendarEvent = async (eventItem, docId = makeEventDocId(eventItem)) => {
+	await deleteDoc(doc(db, 'events', docId));
+	removeCalendarEventInMemory(docId);
+	return docId;
+};
+
+// Seed the Firebase collection with the mock calendar events (for testing/demo purposes)
+// Can be commented out after demo/testing to avoid duplicate entries on every app start
 const seedCalendarEvents = async () => {
 	await Promise.all(
 		calendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
