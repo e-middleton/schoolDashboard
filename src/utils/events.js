@@ -4,72 +4,110 @@ import { db } from '../../firebase.js';
 
 export const calendarEvents = [
 	{
-		title: 'Morning Assembly',
+		eventName: 'Morning Assembly',
 		date: '2026-05-20',
 		startTime: '8:30 AM',
 		endTime: '9:00 AM',
+		duration: '30m',
 		location: 'Main Hall',
 		color: '#11578A',
+		description: '',
 	},
 	{
-		title: 'Staff Meeting',
+		eventName: 'Staff Meeting',
 		date: '2026-05-20',
 		startTime: '3:15 PM',
 		endTime: '4:00 PM',
+		duration: '45m',
 		location: 'Conference Room',
 		color: '#CE2626',
+		description: '',
 	},
 	{
-		title: 'Reading Workshop',
+		eventName: 'Reading Workshop',
 		date: '2026-05-21',
 		startTime: '10:00 AM',
 		endTime: '11:00 AM',
+		duration: '1h',
 		location: 'Library',
 		color: '#4C7F4A',
+		description: '',
 	},
 	{
-		title: 'Class Showcase',
+		eventName: 'Class Showcase',
 		date: '2026-05-22',
 		startTime: '1:00 PM',
 		endTime: '2:30 PM',
+		duration: '1h 30m',
 		location: 'Room 101',
 		color: '#8A5CF6',
+		description: '',
 	},
 	{
-		title: 'Science Lab',
+		eventName: 'Science Lab',
 		date: '2026-05-26',
 		startTime: '9:15 AM',
 		endTime: '10:15 AM',
+		duration: '1h',
 		location: 'Science Lab',
 		color: '#11578A',
+		description: '',
 	},
 	{
-		title: 'Parent Conferences',
+		eventName: 'Parent Conferences',
 		date: '2026-05-27',
 		startTime: '4:00 PM',
 		endTime: '6:00 PM',
+		duration: '2h',
 		location: 'Multiple Rooms',
 		color: '#CE2626',
+		description: '',
 	},
 	{
-		title: 'Field Trip',
+		eventName: 'Field Trip',
 		date: '2026-05-29',
 		startTime: '8:45 AM',
 		endTime: '2:00 PM',
+		duration: '5h 15m',
 		location: 'City Museum',
 		color: '#4C7F4A',
+		description: '',
 	},
 	{
-		title: 'Report Cards Due',
+		eventName: 'Report Cards Due',
 		date: '2026-06-02',
 		startTime: '12:00 PM',
 		endTime: '1:00 PM',
+		duration: '1h',
 		location: 'Admin Office',
 		color: '#8A5CF6',
+		description: '',
 	},
 ];
 
-const makeEventDocId = (eventItem) => `${eventItem.date}-${eventItem.title}-${eventItem.startTime}`
+const parseTimeToMinutes = (timeStr) => {
+	const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+ 	if (!match) return 0;
+ 	let [, h, m, period] = match;
+ 	h = Number(h);
+ 	m = Number(m);
+ 	if (/pm/i.test(period) && h !== 12) h += 12;
+ 	if (/am/i.test(period) && h === 12) h = 0;
+ 	return h * 60 + m;
+};
+
+const computeDurationStr = (start, end) => {
+ 	const diff = parseTimeToMinutes(end) - parseTimeToMinutes(start);
+ 	if (diff <= 0) return '0m';
+ 	const hrs = Math.floor(diff / 60);
+ 	const mins = diff % 60;
+ 	return `${hrs > 0 ? `${hrs}h${mins > 0 ? ' ' : ''}` : ''}${mins > 0 ? `${mins}m` : ''}`.trim();
+};
+
+// (Events are already in the requested normalized shape)
+
+
+const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
 	.toLowerCase()
 	.replace(/[^a-z0-9]+/g, '-')
 	.replace(/^-+|-+$/g, '');
