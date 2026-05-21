@@ -83,7 +83,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       err2 = true;
     } else if (personData.role === "") {
       if (!isStudent) err3 = true; // students roles are always student
-    } else if (personData.dateOfBirth === null) {
+    } else if (personData.dateOfBirth === undefined) {
       err4 = true;
     }
     setErrors({one: err1, two: err2, three: err3, four: err4});
