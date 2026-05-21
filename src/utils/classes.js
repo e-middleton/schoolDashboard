@@ -3,7 +3,7 @@ import {db} from "../../firebase.js";
 
 const classes = [
     {
-    id: 001,
+    id: 1,
     className: "G3 Math",
     teacherID: "teacher001",
     teacherName: "Ms. Anne Randoll",
@@ -17,7 +17,7 @@ const classes = [
     ],
 },
 {
-    id: 002,
+    id: 2,
     className: "[Class name]",
     teacherID: "teacher2",
     teacherName: "Mr. Greg Gonzales",
