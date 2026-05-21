@@ -40,19 +40,24 @@ const GradeManagement = () => {
   /*
   todo:
   - refactor components
-  - params
-  - back button (class page), need to know which class came from
+  - add comments
+  - interactive
+    - dynamically show category and grades
+    - dynamically show category in options for new assignment]
+    - show and hide new assignment
   - validate grade input; error message
-  */
-  // if time: add search bar for assignments (?)
-  const [assignmentName, setAssignmentName] = useState("");
-  const [assignmentGrade, setAssignmentGrade] = useState(null);
-  const [assignmentCategory, setAssignmentCategory] = useState("");
-  const [age, setAge] = React.useState('');
+    - prevent typing non-numbers
 
-  const handleChange = (newAge) => {
-    setAge(newAge);
-  };
+  - navigation: params, back button (class page), need to know which class came from
+  -----------
+  - ignore: grade calculation algorithm
+  */
+
+  // if time: add search bar for assignments (?)
+  
+  const [assignmentName, setAssignmentName] = useState("");
+  const [assignmentGrade, setAssignmentGrade] = useState("");
+  const [assignmentCategory, setAssignmentCategory] = useState("");
 
   console.log(assignmentName)
     console.log(assignmentGrade)
@@ -91,38 +96,38 @@ const GradeManagement = () => {
             <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Assignment Name</InputLabel>
             <TextField
               placeholder="Enter name..."
-              inputProps={{ 'aria-label': 'search' }}
               value={assignmentName}
               onChange={(e) => updateAssignmentName(e.target.value)}
               sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1}}
             />
           </Grid>
           <Grid container direction="column" spacing={1}>
-            <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Grade</InputLabel>
+            <Grid container direction="row" sx={{"display": "flex", "alignItems": "end"}}>
+              <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Grade</InputLabel>
+              <Typography variant="body2" sx={{"display": "inline", color: "#858585"}}> (out of 100)</Typography>
+            </Grid>
             <Grid columns={12} sx={{"display": "flex", "flexDirection": "row", "alignItems": "center"}}>
               <TextField
                 placeholder="Between 0 and 100"
-                inputProps={{ 'aria-label': 'search' }}
                 value={assignmentGrade}
                 onChange={(e) => updateAssignmentGrade(e.target.value)}
                 sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1, width: 1/10}}
               />
-              <Typography variant="body1">out of 100</Typography>
             </Grid>
           </Grid>
               <Box sx={{ minWidth: 120 }}>
           <Grid container direction="column" spacing={1}>
             <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Category</InputLabel>
             <Select
-              value={age}
+              value={assignmentCategory}
               displayEmpty
               renderValue={(value) => {
                 if (!value) {
-                  return <Typography sx={{color:"#707070"}}>Select...</Typography>;
+                  return <Typography sx={{color:"#929292"}}>Select...</Typography>;
                 }
                 return <>{value}</>;
               }}
-              onChange={(e) => handleChange(e.target.value)}
+              onChange={(e) => setAssignmentCategory(e.target.value)}
               sx={{"width": 1/3}}
             >
               <MenuItem value={10}>Ten</MenuItem>
