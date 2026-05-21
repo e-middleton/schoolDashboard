@@ -9,7 +9,7 @@ import App from './App.jsx';
 import Home from './pages/Home.jsx';
 import ClassDirectory from './pages/ClassDirectory.jsx'
 import StudentDirectory from './pages/StudentDirectory.jsx';
-import TeacherDirectory from './pages/TeacherDirectory.jsx';
+import FacultyDirectory from './pages/FacultyDirectory.jsx';
 import Calendar from './pages/Calendar.jsx'
 import ClassDetail from "./pages/ClassDetail.jsx"
 
@@ -33,8 +33,8 @@ const router = createBrowserRouter([
         element: <StudentDirectory />
       },
       {
-        path: "/teacher-directory",
-        element: <TeacherDirectory />
+        path: "/faculty-directory",
+        element: <FacultyDirectory />
       },
       {
         path: "/calendar",
