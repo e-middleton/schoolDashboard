@@ -1,16 +1,17 @@
 import "../styling/GradeManagement.css"
+import { fetchGrades, addGrade, updateGrade, deleteGrade } from "../utils/grades.js"
 
 import { useState, useEffect } from 'react'
+import { useParams } from 'react-router'
 
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
-import InputBase from '@mui/material/InputBase';
-import InputLabel from '@mui/material/InputLabel';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 // Icons
-import SearchIcon from '@mui/icons-material/Search';
+// import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -18,20 +19,16 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import SendIcon from '@mui/icons-material/Send';
 
-import * as React from 'react';
+// Accordian
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 
+// Form inputs
 import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import TextField from '@mui/material/TextField';
-
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 
 import { styled } from '@mui/material/styles';
 
@@ -40,7 +37,9 @@ const GradeManagement = () => {
   /*
   todo:
   - refactor components
+      - removed unused mui imports
   - add comments
+
   - interactive
     - dynamically show category and grades
     - dynamically show category in options for new assignment]
@@ -51,26 +50,41 @@ const GradeManagement = () => {
   - navigation: params, back button (class page), need to know which class came from
   -----------
   - ignore: grade calculation algorithm
+  if time: add search bar for assignments (?)
   */
 
-  // if time: add search bar for assignments (?)
+  // Grades for the student and class being viewed
+  const [gradeData, setGradeData] = useState({});
+
+  // New Assignment Form Input Values
+  const [assignmentFormInput, setAssignmentFormInput] = useState({
+    assignmentName: "",
+    assignmentGrade: "",
+    assignmentCategory: ""
+  })
+
+  console.log(assignmentFormInput);
+
+  // States controlling displayed content
+  const [newAssignmentFormShown, setNewAssignmentFormShown] = useState(false);
+
+  // console.log(assignmentName)
+  // console.log(assignmentGrade)
+  // console.log(assignmentCategory)
+
+  // Get route parameters
+  const params = useParams(); // {classID: 01, studentID: 01}
+
+  // Fetch grade data for class and student viewed
+  useEffect(() => {
+    const getData = async () => {
+      const data = await fetchGrades(params.classID, params.studentID)
+      setGradeData(data);
+    }
+    getData();
+  }, [])
+  // console.log(gradeData);
   
-  const [assignmentName, setAssignmentName] = useState("");
-  const [assignmentGrade, setAssignmentGrade] = useState("");
-  const [assignmentCategory, setAssignmentCategory] = useState("");
-
-  console.log(assignmentName)
-    console.log(assignmentGrade)
-      console.log(assignmentCategory)
-
-  const updateAssignmentName = (newName) => {
-    setAssignmentName(newName);
-  }
-
-  const updateAssignmentGrade = (newGrade) => {
-    setAssignmentGrade(newGrade);
-  }
-
   return (
     <Grid container spacing={10} columns={12} sx={{"display": "flex", "justifyContent": "center"}}>
 
@@ -86,21 +100,31 @@ const GradeManagement = () => {
         </Grid>
 
 
-        {/*  */}
+        {/* New Assignment Form */}
+        {newAssignmentFormShown && 
         <Grid container sx={{"bgcolor": "#F5F3E4", padding: "4rem 2rem", "borderRadius": 2, "width": "auto", "display": "flex", "justifyContent": "space-between", "flexDirection": "column"}}>
+         
+         {/* Top */}
           <Grid container sx={{"display": "flex", "justifyContent": "space-between"}}>
+            {/* Header */}
             <h2>New Assignment Grading</h2>
+
+            {/* Hide Form Button */}
             <Button sx={{"backgroundColor": "#CE2626", "color": "white"}} variant="contained" startIcon={<DeleteIcon />}>Cancel</Button>
           </Grid>
+
+          {/* Assignment Name Input */}
           <Grid container direction="column" spacing={1}>
             <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Assignment Name</InputLabel>
             <TextField
               placeholder="Enter name..."
-              value={assignmentName}
-              onChange={(e) => updateAssignmentName(e.target.value)}
+              value={assignmentFormInput.assignmentName}
+              onChange={(e) => setAssignmentFormInput({...assignmentFormInput, assignmentName: e.target.value})}
               sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1}}
             />
           </Grid>
+          
+          {/* Grade Input */}
           <Grid container direction="column" spacing={1}>
             <Grid container direction="row" sx={{"display": "flex", "alignItems": "end"}}>
               <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Grade</InputLabel>
@@ -109,17 +133,18 @@ const GradeManagement = () => {
             <Grid columns={12} sx={{"display": "flex", "flexDirection": "row", "alignItems": "center"}}>
               <TextField
                 placeholder="Between 0 and 100"
-                value={assignmentGrade}
-                onChange={(e) => updateAssignmentGrade(e.target.value)}
+                value={assignmentFormInput.assignmentGrade}
+                onChange={(e) => setAssignmentFormInput({...assignmentFormInput, assignmentGrade: e.target.value})}
                 sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1, width: 1/10}}
               />
             </Grid>
           </Grid>
-              <Box sx={{ minWidth: 120 }}>
+          
+          {/* Category select input */}
           <Grid container direction="column" spacing={1}>
             <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Category</InputLabel>
             <Select
-              value={assignmentCategory}
+              value={assignmentFormInput.assignmentCategory} //update to set to 1st category
               displayEmpty
               renderValue={(value) => {
                 if (!value) {
@@ -127,7 +152,7 @@ const GradeManagement = () => {
                 }
                 return <>{value}</>;
               }}
-              onChange={(e) => setAssignmentCategory(e.target.value)}
+              onChange={(e) => setAssignmentFormInput({...assignmentFormInput, assignmentCategory: e.target.value})}
               sx={{"width": 1/3}}
             >
               <MenuItem value={10}>Ten</MenuItem>
@@ -135,12 +160,21 @@ const GradeManagement = () => {
               <MenuItem value={30}>Thirty</MenuItem>
             </Select>
           </Grid>
-        </Box>
+
+          {/* Submit Button */}
           <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} endIcon={<SendIcon />} variant="contained">Submit </Button>
         </Grid>
+        }
+
+
+
 
         {/* Add Assignments Button */}
-        <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} variant="contained" endIcon={<AddIcon />}>Add Assignment</Button>
+        <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} variant="contained" endIcon={<AddIcon />}
+          onClick={() => setNewAssignmentFormShown(true)}
+          >Add Assignment</Button>
+
+
 
         {/* List of Accordians */}
         <Grid container spacing={1}>
