@@ -265,6 +265,31 @@
   align-items: flex-start;
 }
 
+/* Highlight month events to match week/day mini-event styling */
+.calendar-month-event {
+  padding: 0.55rem;
+  background: #fffdeb;
+  border-radius: 10px;
+}
+
+.calendar-month-event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.calendar-month-event-title {
+  font-weight: 700;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.calendar-month-event-time {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #444;
+}
+
 .calendar-month-event p {
   font-size: 0.85rem;
   line-height: 1.3;
