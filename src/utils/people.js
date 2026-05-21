@@ -8,11 +8,12 @@ const fetchAllPeople = async (collectionName) => {
 };
 
 // add a new person to the database
-const addPerson = async (collectionName, person) => {
+const addPerson = async (collectionName, person, role) => {
   await addDoc(collection(db, collectionName), {
     firstName: person.firstName,
     lastName: person.lastName,
-    classIDs: []
+    classIDs: [],
+    role: role
   })
 }
 
