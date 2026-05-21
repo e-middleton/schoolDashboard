@@ -15,7 +15,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 
-const AccordianDropdown = ({ label, gradeData, category, setMessage, refreshToggle, setRefreshToggle, editingForm, setEditingForm }) => {
+const AccordianDropdown = ({ label, gradeData, category, setMessage, refreshToggle, setRefreshToggle, openEditingForm }) => {
 
   // Delete grade record
   const handleDelete = async (record, targetClassID, targetStudentID) => {
@@ -59,7 +59,7 @@ const AccordianDropdown = ({ label, gradeData, category, setMessage, refreshTogg
 
                 {/* Edit Button */}
                 <Button 
-                  onClick={() => setEditingForm(true)}
+                  onClick={() => openEditingForm({assignmentID: record.assignmentID, assignmentName: record.assignmentName, assignmentGrade: record.assignmentGrade, assignmentCategory: label})}
                   sx={{"backgroundColor": "#11578A", "color": "white"}} startIcon={<EditIcon />} variant="contained">
                     Edit
                 </Button>

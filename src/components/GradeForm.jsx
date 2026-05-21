@@ -14,20 +14,32 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 
-const GradeForm = ({ closeForm, editingForm, setEditingForm, message, setMessage, refreshToggle, setRefreshToggle, gradeFormInput, setGradeFormInput}) => {
+const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refreshToggle, setRefreshToggle, gradeFormInput, setGradeFormInput}) => {
 
   // Get route parameters
   const params = useParams(); // {classID: 01, studentID: 01}
   
   const handleSubmit = () => {
     const addData = async () => {
-      let success = 
+      let success = ""
       
-      await addGradeRecord({
+      if(!editing) {
+        console.log("creating new grade record")
+        success = await addGradeRecord({ // create new grade record
           ...gradeFormInput,
           classID: params.classID,
           studentID: params.studentID
-      });
+        });
+      }
+      else {
+        console.log("updating existing grade record")
+        // and need assignmentID?
+        success = await updateGradeRecord({ // update existing grade record
+          ...gradeFormInput,
+          classID: params.classID,
+          studentID: params.studentID
+        });
+      }
 
       // error: assignment name already used
       console.log("success is:")
@@ -37,7 +49,7 @@ const GradeForm = ({ closeForm, editingForm, setEditingForm, message, setMessage
         return;
       }
 
-      setMessage(`Successfully added ${gradeFormInput.assignmentName} to ${gradeFormInput.assignmentCategory}`);
+      setMessage(`Successfully ${editing ? "updated" : "added"} ${gradeFormInput.assignmentName} for ${gradeFormInput.assignmentCategory}`);
       closeForm();
       setRefreshToggle(!refreshToggle); // trigger refresh
     }
@@ -50,7 +62,11 @@ const GradeForm = ({ closeForm, editingForm, setEditingForm, message, setMessage
       {/* Top */}
       <Grid container sx={{"display": "flex", "justifyContent": "space-between"}}>
         {/* Header */}
-        <h2>New Grade</h2>
+        {editing ? 
+        (<h2>Editing Grade for {gradeFormInput.assignmentName}</h2>)
+        :
+        (<h2>New Grade</h2>)
+        }
 
         {/* Hide Form Button */}
         <Button
@@ -112,7 +128,7 @@ const GradeForm = ({ closeForm, editingForm, setEditingForm, message, setMessage
       {/* Submit Button */}
       <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} endIcon={<SendIcon />} variant="contained"
         onClick={handleSubmit}>
-          Add
+          {editing ? "Update" : "Add"}
       </Button>
       
       {message && <Typography variant="body2" sx={{color: "red"}}>

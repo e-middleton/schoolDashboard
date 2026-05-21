@@ -75,18 +75,21 @@ const addGradeRecord = async (gradeRecord) => {
     record.assignmentName === gradeRecord.assignmentName
   )); 
 
-  if (!existingRecord) { // proceed if no record exists with same name
-    gradeDocument[categoryListName] = [
-      ...matchingCategoryList,
-      {
-        assignmentID: crypto.randomUUID(),
-        assignmentName: gradeRecord.assignmentName,
-        assignmentGrade: gradeRecord.assignmentGrade
-      }
-    ]
-    await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument)
-    return true;
+  if (existingRecord) {
+    console.log(`update failed: record with name ${updatedRecord.assignmentName} already exists`);
+    return false;
   }
+  
+  gradeDocument[categoryListName] = [
+    ...matchingCategoryList,
+    {
+      assignmentID: crypto.randomUUID(),
+      assignmentName: gradeRecord.assignmentName,
+      assignmentGrade: gradeRecord.assignmentGrade
+    }
+  ]
+  await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument)
+  return true;
 
   console.log(`add failed: record with name ${gradeRecord.name} already exists`);
   return false;
@@ -95,26 +98,52 @@ const addGradeRecord = async (gradeRecord) => {
 
 // ------------update a specified grade record
 const updateGradeRecord = async (updatedRecord) => {
-  // student, class -> document
-  // category -> find matching assignmentID
-    // update name, grade
-      // fetch all records matching selected class and student
-
   const gradeDocument = await fetchGradeDocument(updatedRecord.classID, updatedRecord.studentID);
-  if(!gradeDocument) { // initial grade document doesn't exist
+  if(!gradeDocument) {
     console.log("error: initial grade document was never created")
+    return false;
   }
 
-  // list of all assignments in specified category
   const categoryListName = categoryToProperty[updatedRecord.assignmentCategory];
-  const matchingCategoryList = gradeDocument[categoryToProperty[updatedRecord.assignmentCategory]];
+  const matchingCategoryList = gradeDocument[categoryListName];
+  const categoryUpdated = updatedRecord.assignmentCategory !== updatedRecord.previousCategory;
 
-  const updatedCategoryList = matchingCategoryList.map((record) => { // update specified grade record
-    record.assignmentID === updatedRecord.assignmentID ? ({...updatedRecord}) : ({...record})
-  })
-  gradeDocument[categoryListName] = updatedCategoryList
+  // a different record in the target category already uses this name
+  const existingRecord = matchingCategoryList.some((record) => (
+    categoryUpdated ? 
+      (record.assignmentName === updatedRecord.assignmentName)
+      :
+      (record.assignmentName === updatedRecord.assignmentName
+        && record.assignmentID !== updatedRecord.assignmentID)
+  ));
 
-  await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument)
+  if (existingRecord) {
+    console.log(`update failed: record with name ${updatedRecord.assignmentName} already exists`);
+    return false;
+  }
+
+  const recordToStore = {
+    assignmentID: updatedRecord.assignmentID,
+    assignmentName: updatedRecord.assignmentName,
+    assignmentGrade: updatedRecord.assignmentGrade
+  };
+
+  if (categoryUpdated) {
+    gradeDocument[categoryListName] = [...matchingCategoryList, recordToStore];
+
+    const previousCategoryListName = categoryToProperty[updatedRecord.previousCategory];
+    gradeDocument[previousCategoryListName] = gradeDocument[previousCategoryListName].filter(
+      (record) => record.assignmentID !== updatedRecord.assignmentID
+    );
+  }
+  else {
+    gradeDocument[categoryListName] = matchingCategoryList.map((record) => (
+      record.assignmentID === updatedRecord.assignmentID ? recordToStore : record
+    ));
+  }
+
+  await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument);
+  return true;
 }
 
 

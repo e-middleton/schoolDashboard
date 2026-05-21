@@ -50,10 +50,7 @@ const GradeManagement = () => {
   // States controlling displayed content
   const [gradeFormShown, setGradeFormShown] = useState(false);
   const [message, setMessage] = useState("");
-  const [editingForm, setEditingForm] = useState(false); // true when a grade is being edited/updated
-
-  console.log("editing form");
-  console.log(editingForm);
+  const [editing, setEditing] = useState(false); // true when a grade is being edited/updated
   
   // Input Values
   const [gradeFormInput, setGradeFormInput] = useState({
@@ -72,11 +69,31 @@ const GradeManagement = () => {
     // createGradeDocument(params.classID, params.studentID);
   }, [refreshToggle])
 
+  // Open form to create new grade record
+  const openNewForm = () => {
+    setGradeFormShown(true);
+    setMessage("");
+  }
+
+  // Open form to update existing grade record
+  const openEditingForm = (gradeRecord) => {
+    setEditing(true);
+    setGradeFormShown(true);
+    setGradeFormInput({
+      assignmentName: gradeRecord.assignmentName,
+      assignmentGrade: gradeRecord.assignmentGrade,
+      assignmentCategory: gradeRecord.assignmentCategory,
+      assignmentID: gradeRecord.assignmentID,
+      previousCategory: gradeRecord.assignmentCategory
+    })
+  }
+
+  // console.log(gradeFormInput);
   // console.log("params");
   // console.log(params);
 
   // console.log("grade document");
-  console.log(gradeData);
+  // console.log(gradeData);
   
   return (
     <Grid container spacing={10} columns={12} sx={{"display": "flex", "justifyContent": "center"}}>
@@ -96,9 +113,9 @@ const GradeManagement = () => {
 
         {/* Grade Form */}
         {gradeFormShown && 
-          <GradeForm closeForm={() => {setGradeFormShown(false); setEditingForm(false)}}
-            editingForm={editingForm}
-            setEditingForm={setEditingForm}
+          <GradeForm closeForm={() => {setGradeFormShown(false); setEditing(false)}}
+            editing={editing}
+            setEditing={setEditing}
             refreshToggle={refreshToggle}
             setRefreshToggle={setRefreshToggle}
             message={message}
@@ -112,7 +129,7 @@ const GradeManagement = () => {
         {!gradeFormShown &&
           <>
             <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/3}} variant="contained" endIcon={<AddIcon />}
-            onClick={() => {setGradeFormShown(true); setMessage("")}}>
+            onClick={openNewForm}>
               Add Grade
             </Button>
 
@@ -129,23 +146,19 @@ const GradeManagement = () => {
           
           {/* Quizzes */}
           <AccordianDropdown label={"Quizzes"} gradeData={gradeData} category={"quizGrades"} setMessage={setMessage}
-            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
-            setEditingForm={setEditingForm}/>
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Participation */}
           <AccordianDropdown label={"Participation"} gradeData={gradeData} category={"participationGrades"} setMessage={setMessage}
-            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
-            setEditingForm={setEditingForm}/>
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Projects */}
           <AccordianDropdown label={"Projects"} gradeData={gradeData} category={"projectGrades"} setMessage={setMessage}
-            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
-            setEditingForm={setEditingForm}/>
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Tests */}
           <AccordianDropdown label={"Tests"} gradeData={gradeData} category={"testGrades"} setMessage={setMessage}
-            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
-            setEditingForm={setEditingForm}/>
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
         </Grid>}
 
       </Grid>
