@@ -21,28 +21,24 @@ const GradeManagement = () => {
   
   /*
   todo:
-  - (done) refactor components
-      - (done) removed unused mui imports
-  - add comments
 
-  - interactive
-    - (done) dynamically show category and grades
-    - (done) dynamically show category in options for new grade
-    - (done) show and hide new grade
   - validate grade input; error message
     - make all fields required
-    - prevent typing non-numbers
-    - assignment name
-  - (done) success state, clear form
+    both:
+    - can't be empty
 
-  ----------
+    grade:
+    - prevent typing non-numbers; float allowed
   - edit grade
-  - delete grade
+    - UI + firebase
+  (done) - delete grade
+  - user waiting states: adding grade...; deleting grade...
+
+  -----------
   - navigation: params, back button (class page), need to know which class came from
   - get + display class name, class ID
   -----------
   - ignore: grade calculation algorithm
-  if time: add search bar for assignments (?)
   */
 
   const params = useParams(); // {classID: 01, studentID: 01}
@@ -54,6 +50,17 @@ const GradeManagement = () => {
   // States controlling displayed content
   const [gradeFormShown, setGradeFormShown] = useState(false);
   const [message, setMessage] = useState("");
+  const [editingForm, setEditingForm] = useState(false); // true when a grade is being edited/updated
+
+  console.log("editing form");
+  console.log(editingForm);
+  
+  // Input Values
+  const [gradeFormInput, setGradeFormInput] = useState({
+    assignmentName: "",
+    assignmentGrade: "",
+    assignmentCategory: ""
+  })
 
   // Fetch grade data for class and student viewed
   useEffect(() => {
@@ -62,6 +69,7 @@ const GradeManagement = () => {
       setGradeData(data);
     }
     getData();
+    // createGradeDocument(params.classID, params.studentID);
   }, [refreshToggle])
 
   // console.log("params");
@@ -74,6 +82,7 @@ const GradeManagement = () => {
     <Grid container spacing={10} columns={12} sx={{"display": "flex", "justifyContent": "center"}}>
 
       {/* Left side */}
+      
       <Grid container direction="column" spacing={3} size={{ s: 14, md: 7}}>
         {/* Back Button */}
         <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/6}} startIcon={<ArrowBackIosIcon />} variant="contained">Back </Button>
@@ -87,11 +96,15 @@ const GradeManagement = () => {
 
         {/* Grade Form */}
         {gradeFormShown && 
-          <GradeForm closeForm={() => {setGradeFormShown(false)}}
+          <GradeForm closeForm={() => {setGradeFormShown(false); setEditingForm(false)}}
+            editingForm={editingForm}
+            setEditingForm={setEditingForm}
             refreshToggle={refreshToggle}
             setRefreshToggle={setRefreshToggle}
             message={message}
             setMessage={setMessage}
+            gradeFormInput={gradeFormInput}
+            setGradeFormInput={setGradeFormInput}
           />
         }
 
@@ -102,30 +115,43 @@ const GradeManagement = () => {
             onClick={() => {setGradeFormShown(true); setMessage("")}}>
               Add Grade
             </Button>
-            {
-              message && <Typography variant="body2" sx={{color: "green"}}>{message}</Typography>
-            }
+
+            {/* Success Message (for user feedback) */}
+            {message && <Typography variant="body2" sx={{color: "green"}}>{message}</Typography>}
           </>
         }
 
         {/* List of Accordians for Grade Categories */}
+        {gradeData &&
         <Grid container spacing={1}>
+
+          {/* todo: refactor if time */}
+          
           {/* Quizzes */}
-          <AccordianDropdown label={"Quizzes"} contentList={gradeData["quizGrades"]} setMessage={setMessage}/>
+          <AccordianDropdown label={"Quizzes"} gradeData={gradeData} category={"quizGrades"} setMessage={setMessage}
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
+            setEditingForm={setEditingForm}/>
           
           {/* Participation */}
-          <AccordianDropdown label={"Participation"} contentList={gradeData["participationGrades"]} setMessage={setMessage}/>
+          <AccordianDropdown label={"Participation"} gradeData={gradeData} category={"participationGrades"} setMessage={setMessage}
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
+            setEditingForm={setEditingForm}/>
           
           {/* Projects */}
-          <AccordianDropdown label={"Projects"} contentList={gradeData["projectGrades"]} setMessage={setMessage}/>
+          <AccordianDropdown label={"Projects"} gradeData={gradeData} category={"projectGrades"} setMessage={setMessage}
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
+            setEditingForm={setEditingForm}/>
           
           {/* Tests */}
-          <AccordianDropdown label={"Tests"} contentList={gradeData["testGrades"]} setMessage={setMessage}/>
-        </Grid>
+          <AccordianDropdown label={"Tests"} gradeData={gradeData} category={"testGrades"} setMessage={setMessage}
+            refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} editingForm={editingForm}
+            setEditingForm={setEditingForm}/>
+        </Grid>}
 
       </Grid>
 
-      {/* Right side */}
+
+      {/* Right side - Student Overall Grade, Info*/}
       <Grid container direction="column" size={3} spacing={2}>
         <h3>Grade: 94.8%</h3>
         <h3>Assignments are weighted by group:</h3>

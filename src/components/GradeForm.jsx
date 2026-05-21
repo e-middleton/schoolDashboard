@@ -14,32 +14,26 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 
-const GradeForm = ({ closeForm, refreshToggle, setRefreshToggle, message, setMessage }) => {
-
-  // Input Values
-  const [gradeFormInput, setgradeFormInput] = useState({
-    assignmentName: "",
-    assignmentGrade: "",
-    assignmentCategory: ""
-  })
+const GradeForm = ({ closeForm, editingForm, setEditingForm, message, setMessage, refreshToggle, setRefreshToggle, gradeFormInput, setGradeFormInput}) => {
 
   // Get route parameters
   const params = useParams(); // {classID: 01, studentID: 01}
   
   const handleSubmit = () => {
     const addData = async () => {
-      const success = await addGradeRecord({
+      let success = 
+      
+      await addGradeRecord({
           ...gradeFormInput,
           classID: params.classID,
           studentID: params.studentID
       });
 
-      // assignment name already used
+      // error: assignment name already used
       console.log("success is:")
       console.log(success);
       if(!success) {
-        console.log("frontend - received error");
-        setMessage(`Assignment with name ${gradeFormInput.assignmentName} already exists.`);
+        setMessage(`Assignment with name ${gradeFormInput.assignmentName} already exists in the selected category.`);
         return;
       }
 
@@ -63,7 +57,7 @@ const GradeForm = ({ closeForm, refreshToggle, setRefreshToggle, message, setMes
           sx={{"backgroundColor": "#CE2626", "color": "white"}}
           variant="contained"
           startIcon={<DeleteIcon />}
-          onClick={() => {setMessage(""); closeForm()}}
+          onClick={() => {setMessage(""); closeForm(); }}
         >Cancel</Button>
       </Grid>
 
@@ -73,7 +67,7 @@ const GradeForm = ({ closeForm, refreshToggle, setRefreshToggle, message, setMes
         <TextField
           placeholder="Enter name..."
           value={gradeFormInput.assignmentName}
-          onChange={(e) => setgradeFormInput({...gradeFormInput, assignmentName: e.target.value})}
+          onChange={(e) => setGradeFormInput({...gradeFormInput, assignmentName: e.target.value})}
           sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1}}
         />
       </Grid>
@@ -88,7 +82,7 @@ const GradeForm = ({ closeForm, refreshToggle, setRefreshToggle, message, setMes
           <TextField
             placeholder="Between 0 and 100"
             value={gradeFormInput.assignmentGrade}
-            onChange={(e) => setgradeFormInput({...gradeFormInput, assignmentGrade: e.target.value})}
+            onChange={(e) => setGradeFormInput({...gradeFormInput, assignmentGrade: e.target.value})}
             sx={{"flexGrow": "1", "bgcolor": "#FFFDEB", "borderRadius": 1, width: 1/10}}
           />
         </Grid>
@@ -106,7 +100,7 @@ const GradeForm = ({ closeForm, refreshToggle, setRefreshToggle, message, setMes
             }
             return <>{value}</>;
           }}
-          onChange={(e) => setgradeFormInput({...gradeFormInput, assignmentCategory: e.target.value})}
+          onChange={(e) => setGradeFormInput({...gradeFormInput, assignmentCategory: e.target.value})}
           sx={{"width": 1/3}}
         >
           {gradeCategories.map((category) => (
