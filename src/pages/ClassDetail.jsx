@@ -65,8 +65,6 @@ const ClassDetail = () => {
             ).filter(s => currentClass.studentIDs.includes(s.id));
 
             setStudents(classStudents);
-
-            console.log("STUDENTS:", classStudents);
         };
 
         fetchStudents();
@@ -102,8 +100,6 @@ const ClassDetail = () => {
             ).filter(t => currentClass.teacherID.includes(t.id));
 
             setTeacher(classTeacher);
-
-            console.log("TEACHER:", classTeacher);
         };
 
         fetchTeacher();
@@ -146,8 +142,9 @@ const ClassDetail = () => {
         return grades.find(g => g.studentID === studentID);
     };
 
-    console.log("grades:", grades);
-    console.log("filteredGrades:", filteredGrades);
+    if (student.length === 0) {
+        return <p>No students in this class.</p>
+    }
 
     return (
         <Grid container spacing={4} sx={{ padding: "2rem" }} className="classdetail">

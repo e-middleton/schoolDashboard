@@ -29,32 +29,22 @@ const ClassDirectory = () => {
 
   /* navigate to detail class page */
   const navigate = useNavigate();
-  console.log("CLASSES STATE:", classes);
 
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        console.log("3. fetch started");
-        console.log(db.app.options)
-  
-        console.log("DB:", db);
   
         const snapshot = await getDocs(collection(db, "classes"));
-  
-        console.log("4. snapshot received");
-        console.log("snapshot size:", snapshot.size);
-        
   
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
   
-        console.log("5. data:", data);
   
         setClasses(data);
       } catch (err) {
-        console.error("🔥 FIREBASE ERROR:", err);
+        console.error("FIREBASE ERROR:", err);
       }
     };
   
