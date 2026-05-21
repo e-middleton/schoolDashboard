@@ -1,19 +1,26 @@
-import {Box, List, ListItem, TextField, Button }from '@mui/material';
+import {Box, List, ListItem, TextField, Button, MenuItem }from '@mui/material';
 import "../styling/SearchPage.css";
 import { addPerson, updatePerson, deletePerson } from '../utils/people';
 import { useState } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
 
-const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => {
+const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePopup} ) => {
   const [personData, setPersonData] = useState(defaultInfo);
   const [errors, setErrors] = useState({one: false, two: false, three: false})
   const errMessage = "Required Field";
 
   const deleteRecord = async () => {
     try {
+      // don't delete any records if it hasn't been created yet, just exit
+      if (!update) {
+        closePopup(prevState => !prevState);
+        return;
+      }
       if (isStudent) {
         await deletePerson("students", personData);
+      } else if (isAdmin) {
+        await deletePerson("admin", personData);
       } else {
         await deletePerson("teachers", personData);
       }
@@ -43,6 +50,8 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
     try {
       if (isStudent) {
         await updatePerson("students", personData);
+      } else if (isAdmin) {
+        await updatePerson("admin", personData);
       } else {
         await updatePerson("teachers", personData);
       }
@@ -55,29 +64,34 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
   }
 
   const createRecord = async () => {
-    // input validation
+    // input validation [firstName, lastName, role, date_of_birth] are all REQUIRED
     let err1 = false;
     let err2 = false;
+    let err3 = false;
 
     if (personData.firstName === "" ) {
       err1 = true;
     } else if (personData.lastName === "" ) {
       err2 = true;
+    } else if (personData.role === "") {
+      if (!isStudent) err3 = true; // students roles are always student
     }
-    setErrors({one: err1, two: err2});
+    setErrors({one: err1, two: err2, three: err3});
 
-    if ( err1 || err2 ) return;
+    if ( err1 || err2 || err3) return;
 
     // clear out error messages
-    setErrors({one: false, two: false});
+    setErrors({one: false, two: false, three: false});
 
     try {
       if (personData.firstName === "") return;
 
       if (isStudent) {
-        await addPerson("students", personData);
+        await addPerson("students", personData, "student");
+      } else if (personData.role === "admin") {
+        await addPerson("admin", personData, "admin");
       } else {
-        await addPerson("teachers", personData);
+        await addPerson("teachers", personData, "teacher");
       }
 
       // close popup, passes state back to parent
@@ -88,6 +102,8 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
     
     return 
   }
+
+  const roles = [{value: "admin", label: "Admin"}, {value: "teacher", label: "Teacher"}];
 
   return (
     <>
@@ -120,8 +136,8 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
         />
 
-        {/* assigned classes */}
-        {update ? 
+        {/* assigned classes (not included with admin profiles) */}
+        {update && !isAdmin ? 
         <>
           <h4 style={{textAlign:'center', padding:"15px 0 15px 0"}}>Assigned Classes</h4>
           <div className="class-list">
@@ -143,6 +159,35 @@ const PersonForm = ( {isStudent, update, message, defaultInfo, closePopup} ) => 
           </div> 
         </>
         : null }
+
+        {/* dropdown menu to select role [teacher - admin] */}
+        {!update && !isStudent ?
+        <>
+        <TextField
+          id="outlined-select-role"
+          fullWidth
+          select
+          label="role"
+          error={errors.three}
+          helperText={errors.three ? errMessage : ""}
+          value={personData.role}
+          helperText="Please select the faculty position"
+          onChange={(e) => {setPersonData({...personData, role: e.target.value})}}
+          sx={{
+            '& .MuiFormHelperText-root': {
+              position: 'absolute',
+              top: '100%', // Positions it exactly below the bottom border
+            }
+          }}
+        >
+          {roles.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        </> : null}
         
         <Button sx={{
           backgroundColor:"#3877A6",
