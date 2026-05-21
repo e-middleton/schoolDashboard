@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button, Drawer, Box, Typography, TextField, Autocomplete, MenuItem } from '@mui/material';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase.js';
 
 import { calendarEvents } from '../utils/events';
@@ -162,8 +162,10 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEventSource, setSelectedEventSource] = useState(null);
+  const [selectedEventDocId, setSelectedEventDocId] = useState(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [createErrors, setCreateErrors] = useState({});
   const [formData, setFormData] = useState(() => getEmptyFormData());
   const [eventsVersion, setEventsVersion] = useState(0);
@@ -173,13 +175,72 @@ const Calendar = () => {
     setCreateErrors({});
   };
 
+  const getEventDocId = (eventItem) => eventItem.docId || `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const deleteEvent = async (eventItem) => {
+    const docId = selectedEventDocId || getEventDocId(eventItem);
+
+    try {
+      await deleteDoc(doc(db, 'events', docId));
+
+      import('../utils/events').then((mod) => {
+        if (mod.calendarEvents && Array.isArray(mod.calendarEvents)) {
+          const existingIndex = mod.calendarEvents.findIndex((calendarEvent) => getEventDocId(calendarEvent) === docId);
+          if (existingIndex >= 0) {
+            mod.calendarEvents.splice(existingIndex, 1);
+          }
+        }
+      }).finally(() => {
+        setEventsVersion((v) => v + 1);
+      });
+
+      setSelectedEvent(null);
+      setSelectedEventDocId(null);
+      setSelectedEventSource(null);
+      setIsCreating(false);
+      setIsEditing(false);
+      resetCreateForm();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to delete event', err);
+      setCreateErrors({ form: 'Could not delete the event. Please try again.' });
+    }
+  };
+
   const openCreateDrawerForDate = (date) => {
     setSelectedDate(date);
     setSelectedEvent(null);
     setSelectedDayEvents(null);
     setSelectedEventSource(null);
+    setSelectedEventDocId(null);
+    setIsEditing(false);
     setIsCreating(true);
     resetCreateForm(toDateKey(date));
+  };
+
+  const openEditDrawer = (eventItem) => {
+    const editDate = eventItem.date ? new Date(`${eventItem.date}T00:00:00`) : selectedDate;
+
+    setSelectedDate(editDate);
+    setSelectedDayEvents(null);
+    setSelectedEventSource('direct');
+    setSelectedEventDocId(getEventDocId(eventItem));
+    setIsEditing(true);
+    setIsCreating(true);
+    setSelectedEvent(null);
+    setFormData({
+      eventName: eventItem.eventName || eventItem.title || '',
+      date: eventItem.date || toDateKey(editDate),
+      startTime: eventItem.startTime || '9:00 AM',
+      endTime: eventItem.endTime || '10:00 AM',
+      location: eventItem.location || '',
+      color: eventItem.color || '#11578A',
+      description: eventItem.description || '',
+    });
+    setCreateErrors({});
   };
 
   const selectedDateEvents = useMemo(
@@ -226,6 +287,95 @@ const Calendar = () => {
 
   const jumpToToday = () => setSelectedDate(new Date());
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Temporary debugging logs to trace shortcut handling.
+      // eslint-disable-next-line no-console
+      // console.log('[Calendar shortcut] keydown', {
+      //   key: event.key,
+      //   code: event.code,
+      //   targetTag: event.target && event.target.tagName,
+      //   activeElementTag: document.activeElement && document.activeElement.tagName,
+      //   altKey: event.altKey,
+      //   ctrlKey: event.ctrlKey,
+      //   metaKey: event.metaKey,
+      //   defaultPrevented: event.defaultPrevented,
+      // });
+
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+
+      const key = event.key.toLowerCase();
+      const code = event.code;
+      const shortcut = ({
+        t: 'today',
+        d: 'day',
+        w: 'week',
+        m: 'month',
+        KeyT: 'today',
+        KeyD: 'day',
+        KeyW: 'week',
+        KeyM: 'month',
+      })[key] || ({
+        KeyT: 'today',
+        KeyD: 'day',
+        KeyW: 'week',
+        KeyM: 'month',
+      })[code];
+
+      if (!shortcut) return;
+
+      const target = event.target;
+      const isTypingField = target instanceof HTMLElement && (
+        target.tagName === 'INPUT'
+        || target.tagName === 'TEXTAREA'
+        || target.tagName === 'SELECT'
+        || target.isContentEditable
+      );
+
+      if (isTypingField) return;
+
+      // eslint-disable-next-line no-console
+      // console.log('[Calendar shortcut] matched', { shortcut, key, code });
+
+      if (shortcut === 'day') {
+        // eslint-disable-next-line no-console
+        // console.log('[Calendar shortcut] switching to day view');
+        setActiveView('day');
+        event.preventDefault();
+        return;
+      }
+
+      if (shortcut === 'week') {
+        // eslint-disable-next-line no-console
+        // console.log('[Calendar shortcut] switching to week view');
+        setActiveView('week');
+        event.preventDefault();
+        return;
+      }
+
+      if (shortcut === 'month') {
+        // eslint-disable-next-line no-console
+        // console.log('[Calendar shortcut] switching to month view');
+        setActiveView('month');
+        event.preventDefault();
+        return;
+      }
+
+      // eslint-disable-next-line no-console
+      // console.log('[Calendar shortcut] jumping to today');
+      jumpToToday();
+      event.preventDefault();
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    // console.log('[Calendar] activeView changed', activeView);
+  }, [activeView]);
+
   const renderViewSwitcher = () => (
     <div className="calendar-view-switcher" role="tablist" aria-label="Calendar view">
       {viewOptions.map((viewOption) => (
@@ -259,9 +409,9 @@ const Calendar = () => {
       <Button
         variant="outlined"
         onClick={() => updateSelectedDateByView(-1)}
-        sx={{ borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
+        sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
       >
-        Previous
+        &lt;
       </Button>
       <Button
         variant="outlined"
@@ -273,9 +423,9 @@ const Calendar = () => {
       <Button
         variant="outlined"
         onClick={() => updateSelectedDateByView(1)}
-        sx={{ borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
+        sx={{ minWidth: 0, px: 1.5, borderColor: '#11578A', color: '#11578A', textTransform: 'none' }}
       >
-        Next
+        &gt;
       </Button>
     </div>
   );
@@ -303,6 +453,7 @@ const Calendar = () => {
               onClick={() => {
                 setSelectedDayEvents(null);
                 setSelectedEventSource('direct');
+                setSelectedEventDocId(getEventDocId(eventItem));
                 setSelectedEvent(eventItem);
               }}
               role="button"
@@ -364,6 +515,7 @@ const Calendar = () => {
                     onClick={() => {
                       setSelectedDayEvents(null);
                       setSelectedEventSource('direct');
+                      setSelectedEventDocId(getEventDocId(eventItem));
                       setSelectedEvent(eventItem);
                     }}
                     role="button"
@@ -429,6 +581,7 @@ const Calendar = () => {
                     onClick={() => {
                       setSelectedDayEvents(null);
                       setSelectedEventSource('direct');
+                      setSelectedEventDocId(getEventDocId(eventItem));
                       setSelectedEvent(eventItem);
                     }}
                     role="button"
@@ -478,15 +631,17 @@ const Calendar = () => {
           setSelectedEvent(null);
           setSelectedDayEvents(null);
           setSelectedEventSource(null);
+          setSelectedEventDocId(null);
           setIsCreating(false);
+          setIsEditing(false);
           resetCreateForm();
         }}
       >
           <Box sx={{ width: 380, p: 3 }}>
                     {isCreating ? (
                     <div>
-                      <Typography variant="h6" component="div" gutterBottom>
-                        Create Event
+                      <Typography variant="h5" component="div" gutterBottom>
+                        {isEditing ? 'Edit Event' : 'Create Event'}
                       </Typography>
                       <TextField
                         label="Event Name"
@@ -647,7 +802,7 @@ const Calendar = () => {
                               return normalizeTimeLabel(normalized);
                             };
 
-                            const newEvent = {
+                            const savedEvent = {
                               eventName: formData.eventName,
                               date: formData.date,
                               startTime: formatTime(formData.startTime),
@@ -667,22 +822,31 @@ const Calendar = () => {
                               .toLowerCase()
                               .replace(/[^a-z0-9]+/g, '-')
                               .replace(/^-+|-+$/g, '');
+                            const docId = isEditing && selectedEventDocId ? selectedEventDocId : makeEventDocId(savedEvent);
 
                             try {
-                              await setDoc(doc(db, 'events', makeEventDocId(newEvent)), newEvent);
+                              await setDoc(doc(db, 'events', docId), savedEvent);
                               // update in-memory list and refresh
                               // eslint-disable-next-line no-use-before-define
                               import('../utils/events').then((mod) => {
                                 if (mod.calendarEvents && Array.isArray(mod.calendarEvents)) {
-                                  mod.calendarEvents.push(newEvent);
+                                  const nextEvent = { ...savedEvent, docId };
+                                  const existingIndex = mod.calendarEvents.findIndex((eventItem) => getEventDocId(eventItem) === docId);
+                                  if (existingIndex >= 0) {
+                                    mod.calendarEvents[existingIndex] = nextEvent;
+                                  } else {
+                                    mod.calendarEvents.push(nextEvent);
+                                  }
                                 }
                               }).finally(() => {
                                 setEventsVersion((v) => v + 1);
                               });
                               setIsCreating(false);
+                              setIsEditing(false);
+                              setSelectedEventDocId(docId);
                               resetCreateForm();
                               setSelectedEventSource('direct');
-                              setSelectedEvent(newEvent);
+                              setSelectedEvent({ ...savedEvent, docId });
                             } catch (err) {
                               // eslint-disable-next-line no-console
                               console.error('Failed to create event', err);
@@ -690,12 +854,14 @@ const Calendar = () => {
                             }
                           }}
                         >
-                          Save
+                          {isEditing ? 'Update' : 'Save'}
                         </Button>
                         <Button
                           variant="outlined"
                           onClick={() => {
                             setIsCreating(false);
+                            setIsEditing(false);
+                            setSelectedEventDocId(null);
                             resetCreateForm();
                           }}
                         >
@@ -710,24 +876,24 @@ const Calendar = () => {
                     </div>
                   ) : selectedEvent ? (
                     <div>
-                      <Typography variant="h6" component="div" gutterBottom>
+                      <Typography variant="h5" component="div" gutterBottom>
                         {selectedEvent.eventName || selectedEvent.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography variant="body1" color="text.secondary" gutterBottom>
                         {selectedEvent.date}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography variant="body1" color="text.secondary" gutterBottom>
                         {selectedEvent.startTime} to {selectedEvent.endTime}{selectedEvent.duration ? ` (${selectedEvent.duration})` : ''}
                       </Typography>
                       {selectedEvent.location ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 1 }}>
                           <span style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: selectedEvent.color }} />
-                          <Typography variant="body2">{selectedEvent.location}</Typography>
+                          <Typography variant="body1">{selectedEvent.location}</Typography>
                         </Box>
                       ) : null}
                       <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle2">Details</Typography>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{selectedEvent.description || ''}</Typography>
+                        <Typography variant="subtitle1">Additional Details:</Typography>
+                        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedEvent.description || ''}</Typography>
                       </Box>
                       <Box sx={{ mt: 3 }}>
                         {selectedEventSource === 'summary' ? (
@@ -742,7 +908,28 @@ const Calendar = () => {
                             Back
                           </Button>
                         ) : null}
-                        <Button variant="outlined" onClick={() => setSelectedEvent(null)}>Close</Button>
+                        <Box sx={{ display: 'flex', gap: 1, mt: 4, flexWrap: 'wrap' }}>
+                          <Button
+                            variant="outlined"
+                            onClick={() => openEditDrawer(selectedEvent)}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => deleteEvent(selectedEvent)}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                        <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                          <Button variant="contained" onClick={() => setSelectedEvent(null)} sx={{ backgroundColor: '#11578A', textTransform: 'none' }}>
+                            Close
+                          </Button>
+                        </Box>
                       </Box>
                       </div>
                     ) : selectedDayEvents ? (
@@ -756,6 +943,7 @@ const Calendar = () => {
                               key={`${eventItem.date}-${eventItem.eventName || eventItem.title}`}
                               variant="outlined"
                               onClick={() => {
+                                setSelectedEventDocId(getEventDocId(eventItem));
                                 setSelectedEvent(eventItem);
                               }}
                               sx={{ justifyContent: 'flex-start', textTransform: 'none', borderColor: eventItem.color, color: '#1d1d1d' }}

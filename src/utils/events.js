@@ -4,6 +4,36 @@ import { db } from '../../firebase.js';
 
 export const calendarEvents = [
 	{
+		eventName: 'Library Visit',
+		date: '2026-05-05',
+		startTime: '9:00 AM',
+		endTime: '10:00 AM',
+		duration: '1h',
+		location: 'Library',
+		color: '#11578A',
+		description: '',
+	},
+	{
+		eventName: 'Math Check-In',
+		date: '2026-05-07',
+		startTime: '11:30 AM',
+		endTime: '12:00 PM',
+		duration: '30m',
+		location: 'Room 204',
+		color: '#CE2626',
+		description: '',
+	},
+	{
+		eventName: 'Science Fair Prep',
+		date: '2026-05-20',
+		startTime: '2:00 PM',
+		endTime: '3:00 PM',
+		duration: '1h',
+		location: 'Science Lab',
+		color: '#4C7F4A',
+		description: '',
+	},
+	{
 		eventName: 'Morning Assembly',
 		date: '2026-05-20',
 		startTime: '8:30 AM',
