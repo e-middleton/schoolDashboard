@@ -33,11 +33,15 @@ const ClassDetail = () => {
     const [allStudents, setAllStudents] = useState([]);
     const [students, setStudents] = useState([]);
     const [teachers, setTeacher] = useState([]);
+    const [allTeachers, setAllTeachers] = useState([]);
     const [classAverage, setClassAverage] = useState(0);
     const [grades, setGrades] = useState([]);
     const [search, setSearch] = useState("");
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
+    const [isEditingClass, setIsEditingClass] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editTeacher, setEditTeacher] = useState(null);
 
     useEffect(() => {
         const fetchClass = async () => {
@@ -85,28 +89,50 @@ const ClassDetail = () => {
     }, []);
 
     useEffect(() => {
-        const fetchTeacher = async () => {
-            if (!currentClass?.teacherID) return;
-
+        const fetchTeachers = async () => {
             const snapshot = await getDocs(collection(db, "teachers"));
             const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            setAllTeachers(data);
 
-            setTeacher(data.filter(t => currentClass.teacherID.includes(t.id)));
+            if (currentClass?.teacherID) {
+                setTeacher(data.filter(t => currentClass.teacherID.includes(t.id)));
+            } else {
+                setTeacher([]);
+            }
         };
-        fetchTeacher();
+        fetchTeachers();
     }, [currentClass]);
 
     const getGradeByStudent = (studentID) => grades.find(g => g.studentID === studentID);
 
-    const handleEditClass = async () => {
-        const newName = prompt("Enter new class name:", currentClass.className);
-        if (!newName) return;
+    const handleOpenEditClass = () => {
+        setEditName(currentClass.className || "");
+        setEditTeacher(teachers[0] || null);
+        setIsEditingClass(true);
+    };
+
+    const handleCancelEditClass = () => {
+        setIsEditingClass(false);
+        setEditName("");
+        setEditTeacher(null);
+    };
+
+    const handleSaveClass = async () => {
+        if (!currentClass) return;
+
+        const trimmedName = editName.trim();
+        if (!trimmedName) return;
+
+        const newTeacherID = editTeacher?.id || "";
 
         await updateDoc(doc(db, "classes", id), {
-            className: newName
+            className: trimmedName,
+            teacherID: newTeacherID
         });
 
-        setCurrentClass({ ...currentClass, className: newName });
+        setCurrentClass({ ...currentClass, className: trimmedName, teacherID: newTeacherID });
+        setTeacher(editTeacher ? [editTeacher] : []);
+        setIsEditingClass(false);
     };
 
     const handleAddStudent = async () => {
@@ -167,23 +193,71 @@ const ClassDetail = () => {
                             <h2 style={{ margin: 0, fontSize: "2rem", fontWeight: 600, color: '#11578A' }}>
                                 {currentClass.className}
                             </h2>
-                            <Button onClick={handleEditClass} sx={{ backgroundColor: "#11578A", color: "white" }}>
-                                Edit Class Info
-                            </Button>
+                            {!isEditingClass && (
+                                <Button onClick={handleOpenEditClass} sx={{ backgroundColor: "#11578A", color: "white" }}>
+                                    Edit Class Info
+                                </Button>
+                            )}
                         </div>
 
                         <h3>Average Grade: {classAverage ? `${classAverage}%` : "N/A"}</h3>
                     </div>
 
-                    <Card sx={{ marginTop: "2rem", backgroundColor: "#FFFDEB" }}>
-                        {teachers.map(t => (
-                            <CardContent key={t.id}>
-                                <Typography variant="h5">
-                                    {t.firstName} {t.lastName}
-                                </Typography>
-                            </CardContent>
-                        ))}
-                    </Card>
+                    {isEditingClass ? (
+                        <Box sx={{ mt: 2, mb: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+                            <TextField
+                                label="Class name"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                fullWidth
+                            />
+                            <Autocomplete
+                                options={allTeachers}
+                                getOptionLabel={(option) => `${option.firstName || ''} ${option.lastName || ''}`.trim() || option.id}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={editTeacher}
+                                onChange={(_, newValue) => setEditTeacher(newValue)}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Class teacher"
+                                        placeholder="Select a teacher..."
+                                    />
+                                )}
+                            />
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button
+                                    onClick={handleSaveClass}
+                                    disabled={!editName.trim()}
+                                    sx={{
+                                        backgroundColor: "white",
+                                        color: "#11578A",
+                                        border: "1px solid #11578A",
+                                        '&.Mui-disabled': {
+                                            backgroundColor: "white",
+                                            color: "#9CA3AF",
+                                            borderColor: "#D1D5DB",
+                                        },
+                                    }}
+                                >
+                                    Save Changes
+                                </Button>
+                                <Button onClick={handleCancelEditClass} variant="outlined">
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Box>
+                    ) : (
+                        <Card sx={{ marginTop: "2rem", backgroundColor: "#FFFDEB" }}>
+                            {teachers.map(t => (
+                                <CardContent key={t.id}>
+                                    <Typography variant="h5">
+                                        {t.firstName} {t.lastName}
+                                    </Typography>
+                                </CardContent>
+                            ))}
+                        </Card>
+                    )}
                 </Box>
             </Grid>
 
