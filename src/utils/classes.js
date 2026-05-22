@@ -13,7 +13,6 @@ const classes = [
         "student3",
         "student4",
         "student5",
-        
     ],
 },
 {
@@ -27,7 +26,6 @@ const classes = [
         "student8",
         "student9",
         "student10",
-        
     ],
 }
 ];
@@ -38,6 +36,10 @@ const fetchAllClasses = async () => {
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
+// function for fetching a specific class document
+const fetchClassDocument = async (targetClassID) => {
+  const parsedSnapshot = await fetchAllClasses();
+  return parsedSnapshot.find((doc) => (doc.id === targetClassID));
+};
 
-
-export { classes, fetchAllClasses };
+export { classes, fetchAllClasses, fetchClassDocument };
