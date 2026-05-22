@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button, Drawer, Box, Typography, TextField, Autocomplete, MenuItem } from '@mui/material';
 
-import { calendarEvents, deleteCalendarEvent, makeEventDocId, saveCalendarEvent } from '../utils/events';
+import { deleteCalendarEvent, loadCalendarEvents, makeEventDocId, saveCalendarEvent } from '../utils/events';
 import '../styling/Calendar.css';
 
 const viewOptions = ['day', 'week', 'month'];
@@ -121,8 +121,8 @@ const formatShortDate = (date) =>
   }).format(date);
 
 // Get events for a specific date, sorted by start time and then name for consistent display purposes
-const getEventsForDate = (date) =>
-  calendarEvents
+const getEventsForDate = (events, date) =>
+  events
     .filter((event) => event.date === toDateKey(date))
     .sort((leftEvent, rightEvent) => {
       const timeDifference = parseTimeToMinutes(leftEvent.startTime) - parseTimeToMinutes(rightEvent.startTime);
@@ -181,7 +181,29 @@ const Calendar = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [createErrors, setCreateErrors] = useState({});
   const [formData, setFormData] = useState(() => getEmptyFormData());
-  const [eventsVersion, setEventsVersion] = useState(0);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchEvents = async () => {
+      try {
+        const loadedEvents = await loadCalendarEvents();
+        if (isMounted) {
+          setEvents([...loadedEvents]);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load events', err);
+      }
+    };
+
+    void fetchEvents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Reset the event creation/editing form to empty values after creating/editing/deleting 
   // an event or when opening the form for a new event
@@ -199,7 +221,8 @@ const Calendar = () => {
 
     try {
       await deleteCalendarEvent(eventItem, docId);
-      setEventsVersion((v) => v + 1);
+      const loadedEvents = await loadCalendarEvents();
+      setEvents([...loadedEvents]);
 
       setSelectedEvent(null);
       setSelectedEventDocId(null);
@@ -250,11 +273,10 @@ const Calendar = () => {
     setCreateErrors({});
   };
 
-  // Get events for the currently selected date
-  // Also run this whenever eventsVersion changes (e.g. after deleting an event) to ensure the display is up to date
+  // Get events for the currently selected date from the Firestore-loaded event state.
   const selectedDateEvents = useMemo(
-    () => getEventsForDate(selectedDate),
-    [selectedDate, eventsVersion],
+    () => getEventsForDate(events, selectedDate),
+    [events, selectedDate],
   );
 
   const weekDates = useMemo(
@@ -275,7 +297,7 @@ const Calendar = () => {
     const q = String(searchQuery || '').trim().toLowerCase();
     if (!q) return [];
 
-    return calendarEvents
+    return events
       .filter((ev) => {
         const name = (ev.eventName || ev.title || '').toLowerCase();
         const loc = (ev.location || '').toLowerCase();
@@ -289,7 +311,7 @@ const Calendar = () => {
         if (dateCmp !== 0) return dateCmp;
         return (parseTimeToMinutes(a.startTime) || 0) - (parseTimeToMinutes(b.startTime) || 0);
       });
-  }, [searchQuery, eventsVersion]);
+  }, [events, searchQuery]);
 
   // Highlight matching results
   const highlightedDates = useMemo(() => {
@@ -556,7 +578,7 @@ const Calendar = () => {
 
       <div className="calendar-week-grid">
         {weekDates.map((weekDate) => {
-          const dayEvents = getEventsForDate(weekDate);
+          const dayEvents = getEventsForDate(events, weekDate);
           const isSelected = isSameDay(weekDate, selectedDate);
           const isHighlighted = highlightedDates.has(toDateKey(weekDate));
 
@@ -624,7 +646,7 @@ const Calendar = () => {
         ))}
 
         {monthDates.map((monthDate) => {
-          const dayEvents = getEventsForDate(monthDate);
+          const dayEvents = getEventsForDate(events, monthDate);
           const isCurrentMonth = monthDate.getMonth() === selectedDate.getMonth();
           const isSelected = isSameDay(monthDate, selectedDate);
           const isHighlighted = highlightedDates.has(toDateKey(monthDate));
@@ -890,7 +912,8 @@ const Calendar = () => {
 
                             try {
                               await saveCalendarEvent(savedEvent, docId);
-                              setEventsVersion((v) => v + 1);
+                              const loadedEvents = await loadCalendarEvents();
+                              setEvents([...loadedEvents]);
                               setIsCreating(false);
                               setIsEditing(false);
                               setSelectedEventDocId(docId);
