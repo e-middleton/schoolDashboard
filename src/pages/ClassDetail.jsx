@@ -7,6 +7,8 @@ import { fetchAllPeople } from "../utils/people";
 
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -28,11 +30,14 @@ const ClassDetail = () => {
     const notfound_image = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png"
 
     const [currentClass, setCurrentClass] = useState(null);
+    const [allStudents, setAllStudents] = useState([]);
     const [students, setStudents] = useState([]);
     const [teachers, setTeacher] = useState([]);
     const [classAverage, setClassAverage] = useState(0);
     const [grades, setGrades] = useState([]);
     const [search, setSearch] = useState("");
+    const [isAddingStudent, setIsAddingStudent] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     useEffect(() => {
         const fetchClass = async () => {
@@ -46,8 +51,10 @@ const ClassDetail = () => {
         const fetchStudents = async () => {
             if (!currentClass) return;
 
-            const allStudents = await fetchAllPeople("students");
-            const classStudents = allStudents.filter(s => currentClass.studentIDs?.includes(s.id));
+            const fetchedStudents = await fetchAllPeople("students");
+            setAllStudents(fetchedStudents);
+
+            const classStudents = fetchedStudents.filter(s => currentClass.studentIDs?.includes(s.id));
 
             const studentAverages = await Promise.all(
                 classStudents.map(s => calculateStudentAverage(id, s.id))
@@ -103,12 +110,17 @@ const ClassDetail = () => {
     };
 
     const handleAddStudent = async () => {
-        const studentID = prompt("Enter student ID to add:");
-        if (!studentID || !currentClass) return;
+        if (!selectedStudent || !currentClass) return;
+
+        if ((currentClass.studentIDs || []).includes(selectedStudent.id)) {
+            setIsAddingStudent(false);
+            setSelectedStudent(null);
+            return;
+        }
 
         const updated = {
             ...currentClass,
-            studentIDs: [...(currentClass.studentIDs || []), studentID]
+            studentIDs: [...(currentClass.studentIDs || []), selectedStudent.id]
         };
 
         await updateDoc(doc(db, "classes", id), {
@@ -116,6 +128,8 @@ const ClassDetail = () => {
         });
 
         setCurrentClass(updated);
+        setIsAddingStudent(false);
+        setSelectedStudent(null);
     };
 
     const handleDeleteStudent = async (studentID) => {
@@ -136,6 +150,8 @@ const ClassDetail = () => {
     const filteredStudents = students.filter(s =>
         `${s.firstName} ${s.lastName}`.toLowerCase().includes(search.toLowerCase())
     );
+
+    const studentsToAdd = allStudents.filter((student) => !(currentClass?.studentIDs || []).includes(student.id));
 
     if (!currentClass) return <div>Class not found</div>;
 
@@ -178,10 +194,56 @@ const ClassDetail = () => {
                 </Box>
 
                 <div style={{ display: "flex", gap: "1rem" }}>
-                    <Button onClick={handleAddStudent} sx={{ backgroundColor: "#11578A", color: "white" }} startIcon={<AddIcon />}>
+                    <Button onClick={() => setIsAddingStudent((current) => !current)} sx={{ backgroundColor: "#11578A", color: "white" }} startIcon={<AddIcon />}>
                         Add Student
                     </Button>
                 </div>
+
+                {isAddingStudent ? (
+                    <Box sx={{ mt: 2, mb: 2, maxWidth: 420 }}>
+                        <Autocomplete
+                            options={studentsToAdd}
+                            getOptionLabel={(option) => `${option.firstName || ''} ${option.lastName || ''}`.trim() || option.id}
+                            value={selectedStudent}
+                            onChange={(_, newValue) => setSelectedStudent(newValue)}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Search students to add"
+                                    placeholder="Type a name..."
+                                />
+                            )}
+                            sx={{ mb: 1 }}
+                        />
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                                onClick={handleAddStudent}
+                                disabled={!selectedStudent}
+                                sx={{
+                                    backgroundColor: "white",
+                                    color: "#11578A",
+                                    border: "1px solid #11578A",
+                                    '&.Mui-disabled': {
+                                        backgroundColor: "white",
+                                        color: "#9CA3AF",
+                                        borderColor: "#D1D5DB",
+                                    },
+                                }}
+                            >
+                                Add Selected Student
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setIsAddingStudent(false);
+                                    setSelectedStudent(null);
+                                }}
+                                variant="outlined"
+                            >
+                                Cancel
+                            </Button>
+                        </Box>
+                    </Box>
+                ) : null}
 
                 <div style={{ marginTop: "2rem" }}>
                     {filteredStudents.length === 0 ? (
