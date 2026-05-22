@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 import { calculateStudentAverage } from '../utils/gradeCalculations';
 import { fetchClassDocument } from "../utils/classes";
-import { fetchAllPeople } from "../utils/people";
+import { fetchAllPeople, updatePerson } from "../utils/people";
 
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
@@ -19,7 +19,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const ClassDetail = () => {
@@ -152,6 +152,12 @@ const ClassDetail = () => {
         await updateDoc(doc(db, "classes", id), {
             studentIDs: updated.studentIDs
         });
+
+        // update student doc
+        const docRef = await getDoc(doc(db, "students", selectedStudent.id));
+        const student = { id: docRef.id, ...docRef.data() };
+        student.classIDs.push(currentClass.id);
+        updatePerson("students", student);
 
         setCurrentClass(updated);
         setIsAddingStudent(false);
