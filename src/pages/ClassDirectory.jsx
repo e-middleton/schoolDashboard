@@ -2,7 +2,6 @@ import "../styling/ClassDirectory.css"
 
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
-
 import ImageList from '@mui/material/ImageList';
 
 // Icons
@@ -11,9 +10,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 import { classes } from "../utils/classes";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { stepClasses } from "@mui/material";
 import ClassCard from "../components/ClassCard"
+import { useState } from "react";
+import { useEffect } from "react";
 
 const ClassDirectory = () => {
 
@@ -24,12 +27,36 @@ const ClassDirectory = () => {
   - implement delete class -> option to select classes to delete
   - implement view dashboard -> dynamically navigates to class page
   */
+  const [classes, setClasses] = useState([]);
 
   /* navigate to detail class page */
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+  
+        const snapshot = await getDocs(collection(db, "classes"));
+  
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+  
+  
+        setClasses(data);
+      } catch (err) {
+        console.error("FIREBASE ERROR:", err);
+      }
+    };
+  
+    fetchClasses();
+  }, []);
+
   return (
+    
     <div className="classdirectory-div">
+      CLASS DIRECTORY LOADED
       {/* Header */}
       <h1>Class Directory</h1>
 
@@ -54,19 +81,16 @@ const ClassDirectory = () => {
 
       {/* Grid of all classes */}
       <ImageList cols={3} gap={8}>
-        {classes.map(aClass => (
-          // Card background
-          <ClassCard
-            key={aClass.id}
-            className={aClass.className}
-            teacherName={aClass.teacherName}
-            image={aClass.image}
-            onView={() =>
-              navigate(`/class-directory/${aClass.id}`)
-            }
-          />
-        ))}
-      </ImageList>
+  {classes.map(c => (
+    <ClassCard
+      key={c.id}
+      className={c.className}
+      teacherName={c.teacherName}
+      image={c.image}
+      onView={() => navigate(`/class-directory/${c.id}`)}
+    />
+  ))}
+</ImageList>
     </div>
   )
 };

@@ -66,9 +66,11 @@
   display: inline-flex;
   gap: 0.5rem;
   background: #e8dbb3;
-  padding: 0.5rem;
+  padding: 0.45rem;
   border-radius: 999px;
   width: fit-content;
+  align-items: center;
+  height: 44px;
 }
 
 .calendar-view-button {
@@ -76,9 +78,13 @@
   border-radius: 999px;
   background: transparent;
   color: #1d1d1d;
-  padding: 0.65rem 1.3rem;
+  padding: 0.45rem 1rem;
   font-size: 1rem;
   cursor: pointer;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .calendar-view-button.is-active {
@@ -259,10 +265,93 @@
   gap: 0.4rem;
 }
 
+.calendar-search-results {
+  margin-top: 0.5rem;
+  background: white;
+  border: 1px solid rgba(17, 87, 138, 0.08);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 0.4rem;
+}
+
+.calendar-search-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.calendar-search-result:hover {
+  background: #f3f4f6;
+}
+
+.calendar-search-empty {
+  padding: 0.5rem;
+  color: #666;
+}
+
+.calendar-search-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.calendar-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 320px;
+  background: white;
+  border: 1px solid rgba(17, 87, 138, 0.08);
+  border-radius: 8px;
+  max-height: 260px;
+  overflow: auto;
+  z-index: 60;
+  box-shadow: 0 6px 20px rgba(17, 87, 138, 0.08);
+  padding: 6px 6px;
+}
+
+.calendar-search-dropdown .calendar-search-result {
+  padding: 0.5rem 0.6rem;
+}
+
+.calendar-day-column.is-highlighted,
+.calendar-month-cell.is-highlighted {
+  box-shadow: 0 0 0 3px rgba(227, 139, 41, 0.12) inset;
+  background: rgba(227, 139, 41, 0.03);
+}
+
 .calendar-month-event {
   display: flex;
   gap: 0.45rem;
   align-items: flex-start;
+}
+
+/* Highlight month events to match week/day mini-event styling */
+.calendar-month-event {
+  padding: 0.55rem;
+  background: #fffdeb;
+  border-radius: 10px;
+}
+
+.calendar-month-event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.calendar-month-event-title {
+  font-weight: 700;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.calendar-month-event-time {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #444;
 }
 
 .calendar-month-event p {
