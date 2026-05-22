@@ -33,7 +33,7 @@ const ClassDetail = () => {
     const [grades, setGrades] = useState([]);
     const [search, setSearch] = useState("");
 
-    {/* fetch current class*/ }
+    // fetch current class
     useEffect(() => {
         const fetchClass = async () => {
             const snapshot = await getDocs(collection(db, "classes"));
@@ -51,7 +51,7 @@ const ClassDetail = () => {
         fetchClass();
     }, [id]);
 
-    {/* fetch students of current class*/ }
+    //fetch students of current class
     useEffect(() => {
         const fetchStudents = async () => {
             if (!currentClass?.studentIDs) return;
@@ -70,7 +70,7 @@ const ClassDetail = () => {
         fetchStudents();
     }, [currentClass]);
 
-    {/* fetch grades of students of current class*/ }
+    // fetch grades of students of current class
     useEffect(() => {
         const fetchGrades = async () => {
             const snapshot = await getDocs(collection(db, "grades"));
@@ -86,7 +86,7 @@ const ClassDetail = () => {
         fetchGrades();
     }, []);
 
-    {/* fetch teacher(s) of current class*/ }
+    // fetch teacher(s) of current class
     useEffect(() => {
         const fetchTeacher = async () => {
             if (!currentClass?.teacherID) return;
@@ -142,14 +142,20 @@ const ClassDetail = () => {
         return grades.find(g => g.studentID === studentID);
     };
 
-    if (student.length === 0) {
+    if (students.length === 0) {
         return <p>No students in this class.</p>
     }
+
+    // search filter 
+    const filteredStudents = students.filter((student) => `${student.firstName} ${student.lastName}`
+        .toLowerCase().includes(search.toLowerCase()));
+
+
 
     return (
         <Grid container spacing={4} sx={{ padding: "2rem" }} className="classdetail">
 
-            {/* left side */}
+            {/*left side */}
             <Grid size={{ xs: 12, md: 4 }}>
                 <Box >
                     <img
@@ -166,7 +172,7 @@ const ClassDetail = () => {
                         </Button>
                     </div>
 
-                    {/* teacher card */}
+                    // teacher card
                     <Card sx={{ marginTop: "2rem", backgroundColor: "#FFFDEB" }}>
                         {teachers.map((t) => (
                             <CardContent key={t.id}>
@@ -175,10 +181,10 @@ const ClassDetail = () => {
                                         <span>{t.firstName} {t.lastName}</span>
                                     </Typography>
                                 </div>
-                            
+
                             </CardContent>
-                        )  
-                    )}
+                        )
+                        )}
                     </Card>
 
                     {/* Todo: calculate average grade based on all students */}
@@ -189,7 +195,7 @@ const ClassDetail = () => {
                 </Box>
             </Grid>
 
-            {/* right side */}
+            {/*right side */}
             <Grid size={{ xs: 12, md: 8 }}>
                 <Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem", mb: 2, backgroundColor: "#D3D3D3", borderRadius: "4px", px: 1 }}>
@@ -211,33 +217,30 @@ const ClassDetail = () => {
                     <Button sx={{ "backgroundColor": "#11578A", "color": "white" }} variant="contained" startIcon={<AddIcon />}>Add Student</Button>
                     <Button sx={{ "backgroundColor": "#CE2626", "color": "white" }} variant="contained" startIcon={<DeleteIcon />}>Delete Student</Button>
                 </div>
-
+                        
                 <div style={{ marginTop: "2rem" }}>
-                    {students.map((s) => {
-                        const g = getGradeByStudent(s.id);
+                    {filteredStudents.length === 0 ? (
+                        <p>No Students Found.</p>) : (
+                            filteredStudents.map((s) => {
+                                const g = getGradeByStudent(s.id);
 
-                        return (
-                            <Card key={s.id} sx={{ backgroundColor: "#FFFDEB", mb: 2 }}>
-                                <CardContent>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        {/* student info */}
-                                        <span>{s.firstName || s.id} {s.lastName || s.id}</span>
-
-                                        {/* grade */}
-                                        <span>
-                                            Avg: {calculateStudentAverage(g)}
-                                        </span>
-
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                return (
+                                    <Card key={s.id} sx={{ backgroundColor: "#FFFDE8", mb: 2 }}>
+                                    <CardContent>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                        <span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
+                                        <span>Avg: {calculateStudentAverage(g)}</span>
+                                         </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })
+                    )}
                 </div>
-
+                
             </Grid>
         </Grid>
-    )
+    );
 
 };
 
