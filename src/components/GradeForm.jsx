@@ -23,6 +23,24 @@ const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refres
     const addData = async () => {
       let success = ""
       
+      // check for empty inputs
+      let err1 = !gradeFormInput.assignmentName || gradeFormInput.assignmentName.trim() === "";
+      let err2 = !gradeFormInput.assignmentGrade || gradeFormInput.assignmentGrade.trim() === "";
+      let err3 = !gradeFormInput.assignmentCategory || gradeFormInput.assignmentCategory === "";
+
+      if (err1 || err2 || err3) {
+        setMessage('Cannot have empty fields.')
+        return;
+      }
+
+      // check for invalid grade input
+      const grade = Number(gradeFormInput.assignmentGrade);
+      let err4 = isNaN(grade) || grade > 100 || grade < 0;
+      if (err4) {
+        setMessage('Score must be in range 0-100');
+        return;
+      }
+
       if(!editing) {
         console.log("creating new grade record")
         success = await addGradeRecord({ // create new grade record
