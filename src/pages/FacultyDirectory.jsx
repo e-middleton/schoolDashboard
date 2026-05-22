@@ -9,6 +9,8 @@ import { fetchAllPeople } from "../utils/people";
 import { fetchAllClasses } from "../utils/classes";
 import PersonForm from '../components/PersonForm';
 import dayjs from 'dayjs';
+import axios from 'axios';
+import profileImage from '../assets/profileImage.png';
 
 const FacultyDirectory = () => {
   const [allTeachers, setAllTeachers] = useState([]);
@@ -16,12 +18,22 @@ const FacultyDirectory = () => {
   const [addNewFaculty, setAddNewFaculty] = useState(false);
   const [updateFaculty, setUpdateFaculty] = useState(false);
   const [searchName, setSearchName] = useState("");
-  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], classIDs: [], dateOfBirth: dayjs(), id: ""});
+  const [defaultInfo, setDefaultInfo] = useState({firstName: "", lastName: "", classes: [], classIDs: [], dateOfBirth: dayjs(), id: "", email: "", profilePhoto: null});
   const [isAdmin, setIsAdmin] = useState(false);
+  const BACKEND_URL = 'http://localhost:3001'; 
 
   const teachers = allTeachers.filter((teacher) => `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
   const admin = allAdmin.filter((admin) => `${admin.firstName} ${admin.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
+  // grab a temporary viewing url from the aws database
+  const uploadPhoto = async (fileKey) => {
+    try {
+        const { data } = await axios.post(`${BACKEND_URL}/get-view-url`, { fileKey });
+        return data.viewUrl;
+      } catch (error) {
+        console.error("Error loading image from S3:", error);
+      }
+  }
   // fetch database (happens with each reload)
   useEffect(() => {
     const fetchData = async () => {
@@ -31,25 +43,48 @@ const FacultyDirectory = () => {
         const classData = await fetchAllClasses();
         
         // map class data into teachers as objects {className, classID}
-        // no need to map admin
-        const teacherData = data.map((record) => {
-          if ( record.classIDs[0] ) {
-            // match the teacher's classIDs to class record ids
+        // Creates an array of promises by marking the map callback as async
+        const teacherPromises = data.map(async (record) => {
+          // Map class data into teachers
+          if (record.classIDs && record.classIDs[0]) {
             const classes = record.classIDs.map((classID) => {
-              const assignedClass = classData.filter((item) => item.id === classID)[0];
-
-              return {name: assignedClass.className, id: assignedClass.id};
-            })
+              const assignedClass = classData.find((item) => item.id === classID);
+              return assignedClass 
+                ? { name: assignedClass.className, id: assignedClass.id }
+                : null;
+            }).filter(Boolean); // Removes nulls if a class isn't found
+            
             record.classes = classes;
           } else {
-            const classes = []; // empty
-            record.classes = classes;
+            record.classes = [];
+          }
+
+          //  Await the photo upload 
+          if (record.profilePhoto) {
+            const url = await uploadPhoto(record.profilePhoto); // Added 'await'
+            record.photoUrl = url;
           }
 
           return record;
-        })
+        });
+
+        // repeat for admin
+        const adminPromises = data2.map(async (record) => {
+          //  Await the photo upload 
+          if (record.profilePhoto) {
+            const url = await uploadPhoto(record.profilePhoto); // Added 'await'
+            record.photoUrl = url;
+          }
+
+          return record;
+        });
+
+        // wait for all student records to complete uploading
+        const teacherData = await Promise.all(teacherPromises);
+        const adminData = await Promise.all(adminPromises);
+
         setAllTeachers(teacherData);
-        setAllAdmin(data2);
+        setAllAdmin(adminData);
 
       } catch (error) {
         console.error("Failed to fetch faculty records:", error);
@@ -110,6 +145,7 @@ const FacultyDirectory = () => {
                 {/* Map the teachers to list elements */}
                 {teachers.map( (teacher)  => (
                   <ListItem key={teacher.id}>
+                      <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={teacher.photoUrl ? teacher.photoUrl : profileImage} alt="Profile photo"/>
                       <ListItemText
                         primary={ `${teacher.firstName} ${teacher.lastName}` }
                         secondary={teacher.role}
@@ -127,6 +163,7 @@ const FacultyDirectory = () => {
                 {/* map the administrative faculty to list elements */}
                 {admin.map( (admin) => (
                   <ListItem key={admin.id}>
+                    <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={admin.photoUrl ? admin.photoUrl : profileImage} alt="Profile photo"/>
                     <ListItemText
                     primary={`${admin.firstName} ${admin.lastName}`}
                     secondary={admin.role}
