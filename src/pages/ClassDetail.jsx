@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 import { calculateStudentAverage } from '../utils/gradeCalculations';
 import { fetchClassDocument } from "../utils/classes";
-import { fetchAllPeople } from "../utils/people";
+import { fetchAllPeople, updatePerson } from "../utils/people";
 
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
@@ -19,7 +19,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const ClassDetail = () => {
@@ -99,14 +99,17 @@ const ClassDetail = () => {
     const getGradeByStudent = (studentID) => grades.find(g => g.studentID === studentID);
 
     const handleEditClass = async () => {
-        const newName = prompt("Enter new class name:", currentClass.className);
+        const newName = prompt("Enter new class name: ", currentClass.className);
+        const newTeacher = prompt("Enter new class teacher id: ", currentClass.teacherIDs[0] ? currentClass.teacherIDs[0] : "no teacher assigned");
+
         if (!newName) return;
 
         await updateDoc(doc(db, "classes", id), {
-            className: newName
+            className: newName,
+            teacherIDs: [newTeacher]
         });
 
-        setCurrentClass({ ...currentClass, className: newName });
+        setCurrentClass({ ...currentClass, className: newName, teacherIDs: [newTeacher] });
     };
 
     const handleAddStudent = async () => {
@@ -126,6 +129,12 @@ const ClassDetail = () => {
         await updateDoc(doc(db, "classes", id), {
             studentIDs: updated.studentIDs
         });
+
+        // update student doc
+        const docRef = await getDoc(doc(db, "students", selectedStudent.id));
+        const student = { id: docRef.id, ...docRef.data() };
+        student.classIDs.push(currentClass.id);
+        updatePerson("students", student);
 
         setCurrentClass(updated);
         setIsAddingStudent(false);
