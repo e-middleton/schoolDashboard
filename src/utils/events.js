@@ -8,7 +8,11 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase.js';
 
+<<<<<<< HEAD
 >>>>>>> 21defa2 (feat: connected events to firebase)
+=======
+>>>>>>> 6c9de20 (feat: connected events to firebase)
+>>>>>>> 67d5096 (temp: fix for merge conflict)
 export const calendarEvents = [
 	{
 		eventName: 'Library Visit',
@@ -123,10 +127,67 @@ export const calendarEvents = [
 ];
 
 const makeEventDocId = (eventItem) => `${eventItem.date}-${eventItem.title}-${eventItem.startTime}`
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 21defa2 (feat: connected events to firebase)
+=======
+>>>>>>> 6c9de20 (feat: connected events to firebase)
+>>>>>>> 67d5096 (temp: fix for merge conflict)
+>>>>>>> 16f2193 (temp: fix for merge conflict)
 	.toLowerCase()
 	.replace(/[^a-z0-9]+/g, '-')
 	.replace(/^-+|-+$/g, '');
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+// Update existing events or insert new events in the in-memory array (not the Firebase collection)
+const upsertCalendarEventInMemory = (eventItem, docId) => {
+	const nextEvent = { ...eventItem, docId };
+	const existingIndex = calendarEvents.findIndex((calendarEvent) => makeEventDocId(calendarEvent) === docId);
+
+	if (existingIndex >= 0) {
+		calendarEvents[existingIndex] = nextEvent;
+	} else {
+		calendarEvents.push(nextEvent);
+	}
+
+	return nextEvent;
+};
+
+// Delete events from the in-memory array (not the Firebase collection)
+const removeCalendarEventInMemory = (docId) => {
+	const existingIndex = calendarEvents.findIndex((calendarEvent) => makeEventDocId(calendarEvent) === docId);
+
+	if (existingIndex >= 0) {
+		calendarEvents.splice(existingIndex, 1);
+	}
+};
+
+
+// Upsert (update or insert) a calendar event in Firebase and in-memory array
+export const saveCalendarEvent = async (eventItem, docId = makeEventDocId(eventItem)) => {
+	await setDoc(doc(db, 'events', docId), eventItem);
+	return upsertCalendarEventInMemory(eventItem, docId);
+};
+
+// Delete a calendar event from Firebase and in-memory array
+export const deleteCalendarEvent = async (eventItem, docId = makeEventDocId(eventItem)) => {
+	await deleteDoc(doc(db, 'events', docId));
+	removeCalendarEventInMemory(docId);
+	return docId;
+};
+
+// Seed the Firebase collection with the mock calendar events (for testing/demo purposes)
+// Can be commented out after demo/testing to avoid duplicate entries on every app start
+=======
+<<<<<<< HEAD
+>>>>>>> 21defa2 (feat: connected events to firebase)
+=======
+>>>>>>> 6c9de20 (feat: connected events to firebase)
+>>>>>>> 67d5096 (temp: fix for merge conflict)
+>>>>>>> 16f2193 (temp: fix for merge conflict)
 const seedCalendarEvents = async () => {
 	await Promise.all(
 		calendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
