@@ -5,14 +5,66 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs'
 import "../styling/SearchPage.css";
 import { addPerson, updatePerson, deletePerson } from '../utils/people';
-import { useState } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { NavLink } from 'react-router-dom';
+import axios from "axios";
+import profileImage from '../assets/profileImage.png';
 
 const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePopup} ) => {
   const [personData, setPersonData] = useState(defaultInfo);
-  const [errors, setErrors] = useState({one: false, two: false, three: false, four: false})
+  const [errors, setErrors] = useState({one: false, two: false, three: false, four: false, five: false})
   const errMessage = "Required Field";
+  const [photoUrl, setPhotoUrl] = useState(null)
+  const BACKEND_URL = 'http://localhost:3001'; 
+  
+  useEffect(() => {
+    async function fetchImageUrl() {
+      if (!personData.profilePhoto) return;
+
+      const fileKey = personData.profilePhoto;
+      
+      try {
+        const { data } = await axios.post(`${BACKEND_URL}/get-view-url`, { fileKey });
+        setPhotoUrl(data.viewUrl);
+      } catch (error) {
+        console.error("Error loading image from S3:", error);
+      }
+    }
+
+    fetchImageUrl();
+  }, [personData]);
+
+  // handle profile photo uploads
+  const handleProfilePhoto = async (e) => {
+    const profilePhoto = e.target.files[0];
+    if (!profilePhoto) return;
+
+    // ask backend for signed URL
+    const response = await axios.post(
+      "http://localhost:3001/generate-upload-url",
+      {
+        fileName: profilePhoto.name,
+        fileType: profilePhoto.type,
+      }
+    );
+    const { uploadUrl, fileKey } = response.data;
+
+    // upload file directly to S3
+    await axios.put(uploadUrl, profilePhoto, {
+      headers: {
+        "Content-Type": profilePhoto.type,
+      },
+    });
+    // await axios.put(uploadUrl, profilePhoto);
+ 
+    // // remove query params to get permanent image URL
+    // const imageUrl = uploadUrl.split("?")[0];
+
+    setPersonData({...personData, profilePhoto: fileKey});
+
+  }
 
   const deleteRecord = async () => {
     try {
@@ -39,6 +91,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     let err1 = false;
     let err2 = false;
     let err4 = false; // dob
+    let err5 = false; // email
 
     if (personData.firstName === "" ) {
       err1 = true;
@@ -46,13 +99,15 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       err2 = true;
     } else if (personData.dateOfBirth === null) {
       err4 = true;
+    } else if (personData.email === "") {
+      err5 = true;
     }
-    setErrors({one: err1, two: err2, four: err4});
+    setErrors({one: err1, two: err2, four: err4, five: err5});
 
-    if ( err1 || err2 || err4) return;
+    if ( err1 || err2 || err4 || err5) return;
 
     // clear out error messages
-    setErrors({one: false, two: false, four: false});
+    setErrors({one: false, two: false, four: false, five: false});
 
     try {
       if (isStudent) {
@@ -76,6 +131,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     let err2 = false;
     let err3 = false;
     let err4 = false;
+    let err5 = false;
 
     if (personData.firstName === "" ) {
       err1 = true;
@@ -85,13 +141,15 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       if (!isStudent) err3 = true; // students roles are always student
     } else if (personData.dateOfBirth === undefined) {
       err4 = true;
+    } else if (personData.email === "") {
+      err5 = true;
     }
-    setErrors({one: err1, two: err2, three: err3, four: err4});
+    setErrors({one: err1, two: err2, three: err3, four: err4, five: err5});
 
-    if ( err1 || err2 || err3 || err4) return;
+    if ( err1 || err2 || err3 || err4 || err5) return;
 
     // clear out error messages
-    setErrors({one: false, two: false, three: false, four: false});
+    setErrors({one: false, two: false, three: false, four: false, five: false});
 
     try {
       if (personData.firstName === "") return;
@@ -117,56 +175,93 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
 
   return (
     <>
-      <h3 style={{textAlign:'center', padding:"5px 0 1px 0"}}>{message}</h3>
+      <h3 style={{textAlign:'center', padding:"1rem 0 1px 0"}}>{message}</h3>
       <Box
         component="form"
         sx={{width: "75%", display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
         noValidate
         autoComplete="off"
-        style={{justifyContent: update ? "" : "center"}}
+        // style={{justifyContent: update ? "" : "center"}}
       >
-        <TextField
-          required
-          fullWidth
-          value={personData.firstName}
-          id="outlined-required"
-          label="First Name"
-          error={errors.one}
-          helperText={errors.one ? errMessage : ""}
-          onChange={(e) => {setPersonData({...personData, firstName: e.target.value})}}
-        />
-        <TextField
-          required
-          fullWidth
-          value={personData.lastName}
-          id="outlined-required"
-          label="Last Name"
-          error={errors.two}
-          helperText={errors.two ? errMessage : ""}
-          onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
-        />
+        <div className="person-info-and-photo">
+          <div>
+            <TextField
+              required
+              fullWidth
+              value={personData.firstName}
+              id="outlined-required"
+              label="First Name"
+              error={errors.one}
+              helperText={errors.one ? errMessage : ""}
+              onChange={(e) => {setPersonData({...personData, firstName: e.target.value})}}
+            />
+            <TextField
+              required
+              fullWidth
+              value={personData.lastName}
+              id="outlined-required"
+              label="Last Name"
+              error={errors.two}
+              helperText={errors.two ? errMessage : ""}
+              onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
+            />
+            <TextField
+              required
+              fullWidth
+              value={personData.email}
+              id="outlined-required"
+              label="email"
+              error={errors.five}
+              helperText={errors.five ? errMessage : ""}
+              onChange={(e) => {setPersonData({...personData, email: e.target.value})}}
+            />
+          </div>
+        
+          <img style={{width: "14rem", height: "14rem", padding: "1rem", borderRadius: "50%"}} src={photoUrl ? photoUrl : profileImage} alt="Profile Photo" />
+        </div>
+        
         {/* field for date of birth */}
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-          sx={{
-            margin: "0.5rem",
-            maxWidth: "75%",
-          }}
-            slotProps={{
-              textField: {
-                required: true, 
-                error: errors.four,
-                helperText: errors.four ? errMessage : "",
-              },
+        <div className="horizButtons">
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+            sx={{
+              margin: "0.5rem",
+              maxWidth: "14rem",
             }}
-            label="Date of Birth"
-            value={personData.dateOfBirth
-              ? dayjs(personData.dateOfBirth)
-              : null}
-            onChange={(newValue) => {
-              setPersonData({...personData, dateOfBirth: newValue})}}
-          />
-        </LocalizationProvider>
+              slotProps={{
+                textField: {
+                  required: true, 
+                  error: errors.four,
+                  helperText: errors.four ? errMessage : "",
+                },
+              }}
+              label="Date of Birth"
+              value={personData.dateOfBirth
+                ? dayjs(personData.dateOfBirth)
+                : null}
+              onChange={(newValue) => {
+                setPersonData({...personData, dateOfBirth: newValue})}}
+            />
+          </LocalizationProvider>
+          <Button
+            component="label"
+            role={undefined}
+            variant="contained"
+            tabIndex={-1}
+            startIcon={<CloudUploadIcon />}
+            sx={{margin: "0.6rem", width:"14rem", backgroundColor:"#3877A6"}}
+          >
+            Upload PNG
+            <input
+              type="file"
+              style={{display: "none"}}
+              accept="image/png"
+              onChange={(e) => handleProfilePhoto(e)}
+              multiple
+            />
+          </Button>
+        </div>
+        
 
         {/* assigned classes (not included with admin profiles) */}
         {update && !isAdmin ? 
