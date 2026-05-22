@@ -1,5 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useState } from "react";
+
+import { calculateStudentAverage } from '../utils/gradeCalculations';
+
 import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
 import Card from '@mui/material/Card';
@@ -14,7 +17,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-import { classes } from "../utils/classes";
+import { fetchClassDocument } from "../utils/classes";
+import { fetchAllPeople } from "../utils/people";
 import { initializeGradesForClass, createGradeForStudent } from "../utils/gradeService";
 import { useNavigate } from "react-router-dom";
 import ClassCard from "../components/ClassCard"
@@ -36,41 +40,44 @@ const ClassDetail = () => {
     const [currentClass, setCurrentClass] = useState(null);
     const [students, setStudents] = useState([]);
     const [teachers, setTeacher] = useState([]);
+    const [classAverage, setClassAverage] = useState(0);
     const [grades, setGrades] = useState([]);
     const [search, setSearch] = useState("");
 
     // fetch current class
     useEffect(() => {
         const fetchClass = async () => {
-            const snapshot = await getDocs(collection(db, "classes"));
-
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            const found = data.find(c => c.id === id);
-
-            setCurrentClass(found);
+            // note: id is the class document's id
+            const classDocument = await fetchClassDocument(id)
+            setCurrentClass(classDocument);
         };
 
         fetchClass();
     }, [id]);
+
+    console.log(students);
 
     //fetch students of current class
     useEffect(() => {
         const fetchStudents = async () => {
             if (!currentClass?.studentIDs) return;
 
-            const snapshot = await getDocs(collection(db, "students"));
+            const allStudents = await fetchAllPeople("students");
+            const classStudents = allStudents.filter(s => currentClass.studentIDs.includes(s.id));
 
-            const classStudents = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })
-            ).filter(s => currentClass.studentIDs.includes(s.id));
+            // console.log(classStudents);
 
-            setStudents(classStudents);
+            const studentAverages = await Promise.all(classStudents.map(student => (calculateStudentAverage(id, student.id))));
+            setStudents(classStudents.map((studentData, i) => ({
+                ...studentData,
+                studentAverage: studentAverages[i]
+            })));
+
+            // derive class average from the student averages
+            const filtered = studentAverages.filter(a => a !== null);
+            const classAverage = filtered.length === 0 ?
+                (null) : (filtered.reduce((sum, a) => sum + parseFloat(a), 0) / filtered.length).toFixed(1);
+            setClassAverage(classAverage);
         };
 
         fetchStudents();
@@ -111,37 +118,11 @@ const ClassDetail = () => {
         fetchTeacher();
     }, [currentClass]);
 
-
     if (!currentClass) {
         return <div>Class not found</div>
     }
 
-    const calculateStudentAverage = (g) => {
-        if (!g) return 0;
-
-        const all = [
-            ...(g.quizGrades),
-            ...(g.testGrades),
-            ...(g.projectGrades),
-            ...(g.participationGrades)
-        ].map(Number);
-
-        if (all.length === 0) return 0;
-
-        const sum = all.reduce((a, b) => a + b, 0);
-
-        return (sum / all.length).toFixed(1);
-    };
-
     const filteredGrades = grades.filter((g) => { return String(g.studentID).includes(search); });
-
-    const classAverage = grades.length === 0
-        ? 0
-        : (
-            grades.reduce((sum, g) => {
-                return sum + Number(calculateStudentAverage(g));
-            }, 0) / grades.length
-        ).toFixed(1);
 
 
     const getGradeByStudent = (studentID) => {
@@ -169,16 +150,23 @@ const ClassDetail = () => {
                         style={{ width: "100%", borderRadius: "8px" }}
                     />
 
-                    <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <h2 style={{ margin: 0, fontSize: "2rem", fontWeight: 600, color: '#11578A' }}>
-                            {currentClass.className}
-                        </h2>
-                        <Button sx={{ "backgroundColor": "#11578A", "color": "white", whiteSpace: "npwrap", ml: 2 }} variant="contained">
-                            Edit Class Info
-                        </Button>
+                    <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", alignItems: "space-between", justifyContent: "center" }}>
+                        <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <h2 style={{ margin: 0, fontSize: "2rem", fontWeight: 600, color: '#11578A' }}>
+                                {currentClass.className}
+                            </h2>
+                            <Button sx={{ "backgroundColor": "#11578A", "color": "white", whiteSpace: "npwrap", ml: 2 }} variant="contained">
+                                Edit Class Info
+                            </Button>
+                        </div>
+
+                        {/* Average class grade */}
+                        <div style={{ marginTop: "0.5rem" }}>
+                            <h3>Average Grade: {classAverage ? `${classAverage}%` : ("N/A")}</h3>
+                        </div>
                     </div>
 
-                    // teacher card
+                    {/* Teacher Card */}
                     <Card sx={{ marginTop: "2rem", backgroundColor: "#FFFDEB" }}>
                         {teachers.map((t) => (
                             <CardContent key={t.id}>
@@ -192,12 +180,6 @@ const ClassDetail = () => {
                         )
                         )}
                     </Card>
-
-                    {/* Todo: calculate average grade based on all students */}
-                    {/* Average class grade */}
-                    <div style={{ marginTop: "2rem" }}>
-                        <h3>Average Grade: {classAverage}</h3>
-                    </div>
                 </Box>
             </Grid>
 
@@ -237,7 +219,7 @@ const ClassDetail = () => {
 											<span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
 
 											<div style={{display: "flex", gap: "1rem", "alignItems": "center"}}>
-												<span>Avg: {calculateStudentAverage(g)}</span>
+												<span> {s.studentAverage ? `Avg: ${s.studentAverage}%` : "No grades yet."}</span>
 												<Button onClick={() => navigate(`/grades/${currentClass.id}/${s.id}`)}
 													sx={{ "backgroundColor": "#11578A", "color": "white" }} variant="contained">Edit Grades</Button>
 											</div>

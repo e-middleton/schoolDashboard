@@ -1,5 +1,7 @@
 import { doc, addDoc, deleteDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase.js";
+import { fetchStudentDocument } from "../utils/people.js"
+import { fetchClassDocument } from "../utils/classes.js"
 
 // Fixed grade categories
 const gradeCategories = ["Quizzes", "Participation", "Projects", "Tests"];
@@ -90,11 +92,9 @@ const addGradeRecord = async (gradeRecord) => {
       assignmentGrade: gradeRecord.assignmentGrade
     }
   ]
+
   await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument)
   return true;
-
-  console.log(`add failed: record with name ${gradeRecord.name} already exists`);
-  return false;
 }
 
 
@@ -151,7 +151,7 @@ const updateGradeRecord = async (updatedRecord) => {
 
 // ------------delete a specified grade record
 const deleteGradeRecord = async (gradeRecord) => {
-  console.log(gradeRecord);
+  // console.log(gradeRecord);
   const gradeDocument = await fetchGradeDocument(gradeRecord.classID, gradeRecord.studentID);
   // initial grade document doesn't exist
   if(!gradeDocument) {
