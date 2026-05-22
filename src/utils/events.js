@@ -1,9 +1,9 @@
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase.js';
 
 // Mock data for calendar events. For testing/demo purposes
-export const calendarEvents = [
+const mockCalendarEvents = [
 	{
 		eventName: 'Library Visit',
 		date: '2026-05-05',
@@ -116,6 +116,9 @@ export const calendarEvents = [
 	},
 ];
 
+// Client-side cache used by the calendar UI.
+export const calendarEvents = [...mockCalendarEvents];
+
 // Helper function to convert time string to minutes for duration calculation
 const parseTimeToMinutes = (timeStr) => {
 	const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -144,6 +147,18 @@ export const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eve
 	.toLowerCase()
 	.replace(/[^a-z0-9]+/g, '-')
 	.replace(/^-+|-+$/g, '');
+
+// Load events from Firestore and refresh the local cache.
+export const loadCalendarEvents = async () => {
+	const snapshot = await getDocs(collection(db, 'events'));
+	const loadedEvents = snapshot.docs.map((snap) => ({
+		docId: snap.id,
+		...snap.data(),
+	}));
+
+	calendarEvents.splice(0, calendarEvents.length, ...loadedEvents);
+	return calendarEvents;
+};
 
 // Update existing events or insert new events in the in-memory array (not the Firebase collection)
 const upsertCalendarEventInMemory = (eventItem, docId) => {
@@ -184,10 +199,12 @@ export const deleteCalendarEvent = async (eventItem, docId = makeEventDocId(even
 
 // Seed the Firebase collection with the mock calendar events (for testing/demo purposes)
 // Can be commented out after demo/testing to avoid duplicate entries on every app start
-const seedCalendarEvents = async () => {
+export const seedCalendarEvents = async () => {
 	await Promise.all(
-		calendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
+		mockCalendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
 	);
 };
 
-void seedCalendarEvents();
+if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_AUTO_SEED === 'true') {
+	void seedCalendarEvents();
+}
