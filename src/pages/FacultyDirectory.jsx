@@ -22,6 +22,7 @@ const FacultyDirectory = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const BACKEND_URL = 'http://localhost:3001'; 
 
+  // temporary display data - changes with search bar updates
   const teachers = allTeachers.filter((teacher) => `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
   const admin = allAdmin.filter((admin) => `${admin.firstName} ${admin.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
@@ -94,6 +95,7 @@ const FacultyDirectory = () => {
     fetchData();
   }, [addNewFaculty, updateFaculty]);
 
+  // helper function for faculty updates
   const handleFacultyUpdate = (faculty) => {
     setDefaultInfo({...faculty});
     setUpdateFaculty(prevState => !prevState);
@@ -107,7 +109,7 @@ const FacultyDirectory = () => {
         <div className="directory-content">
 
           <div className="half-content">
-            {/* Search Form for Students */}
+            {/* Search Form for faculty */}
             <Box component="form" className="searchForm">
               <TextField
                 sx={{
@@ -160,6 +162,7 @@ const FacultyDirectory = () => {
                       </Button>
                   </ListItem>
                 ))}
+                
                 {/* map the administrative faculty to list elements */}
                 {admin.map( (admin) => (
                   <ListItem key={admin.id}>

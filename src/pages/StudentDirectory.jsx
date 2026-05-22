@@ -21,6 +21,7 @@ const StudentDirectory = () => {
   const [allStudents, setAllStudents] = useState([]);
   const BACKEND_URL = 'http://localhost:3001'; 
 
+  // temporary display students - changes as search bar updates
   const students = allStudents.filter((student) => `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchName.toLowerCase()))
 
   // grab a temporary viewing url from the aws database
@@ -69,7 +70,6 @@ const StudentDirectory = () => {
 
         // wait for all student records to complete uploading
         const studentData = await Promise.all(studentPromises);
-
         setAllStudents(studentData);
 
       } catch (error) {
@@ -80,6 +80,7 @@ const StudentDirectory = () => {
     fetchData();
   }, [addNewStudent, updateStudent]);
 
+  // helper function for updating student records
   const handleStudentUpdate = (student) => {
     setDefaultInfo({...student});
     setUpdateStudent(prevState => !prevState);
@@ -91,7 +92,8 @@ const StudentDirectory = () => {
         <div className="directory-content">
           <div className="half-content">
             
-            {/* Search Form for Students */}
+            {/* Search Form for Students by Name */}
+
             <Box component="form" className="searchForm">
               <TextField
                 sx={{
@@ -103,7 +105,11 @@ const StudentDirectory = () => {
                 placeholder="Jane Doe"
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
-                
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevents implicit form submission
+                  }
+                }}
                 slotProps={{
                   input: {
                   endAdornment: <InputAdornment position="end">
@@ -115,6 +121,7 @@ const StudentDirectory = () => {
             </Box>
 
             {/* List of Students */}
+
             <div className="people-list">
               <List sx={{
                 width: '100%',
@@ -144,6 +151,7 @@ const StudentDirectory = () => {
           </div>
 
           {/* Image and Add Student Button */}
+
           <div className="half-content">
             <Button 
               sx={{
@@ -163,7 +171,8 @@ const StudentDirectory = () => {
           </div>
         </div>
       </section>
-
+      
+      {/* Form for adding a new student */}
       {addNewStudent || updateStudent ? 
         <div className="form-overlay">
           <div className="person-form" style={{gridTemplateRows: addNewStudent ? '1fr 6fr 1.5fr' : '1fr 6fr 0.5fr'}}>

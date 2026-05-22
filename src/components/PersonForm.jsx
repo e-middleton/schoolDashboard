@@ -19,6 +19,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
   const [photoUrl, setPhotoUrl] = useState(null)
   const BACKEND_URL = 'http://localhost:3001'; 
   
+  // renders the profile image once or upon new uploads
   useEffect(() => {
     async function fetchImageUrl() {
       if (!personData.profilePhoto) return;
@@ -57,15 +58,11 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
         "Content-Type": profilePhoto.type,
       },
     });
-    // await axios.put(uploadUrl, profilePhoto);
- 
-    // // remove query params to get permanent image URL
-    // const imageUrl = uploadUrl.split("?")[0];
 
     setPersonData({...personData, profilePhoto: fileKey});
-
   }
 
+  // double checking for deleting from the database
   const deleteRecord = async () => {
     try {
       // don't delete any records if it hasn't been created yet, just exit
@@ -86,6 +83,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     }
   }
 
+  // helper function for updating db records, handles input checking
   const updateRecord = async () => {
     // input validation
     let err1 = false;
@@ -125,6 +123,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     return 
   }
 
+  // helper function for creating records in the db - handles input checking
   const createRecord = async () => {
     // input validation [firstName, lastName, role, dateOfBirth] are all REQUIRED
     let err1 = false;
@@ -171,6 +170,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
     return 
   }
 
+  // valid roles for a faculty member to hold
   const roles = [{value: "admin", label: "Admin"}, {value: "teacher", label: "Teacher"}];
 
   return (
@@ -181,10 +181,11 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
         sx={{width: "75%", display: "grid", '& .MuiTextField-root': { display: 'flex', flexDirection: 'row', m: 1, width: '25ch' } }}
         noValidate
         autoComplete="off"
-        // style={{justifyContent: update ? "" : "center"}}
       >
         <div className="person-info-and-photo">
           <div>
+
+            {/* First and last name entry fields  */}
             <TextField
               required
               fullWidth
@@ -205,6 +206,8 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
               helperText={errors.two ? errMessage : ""}
               onChange={(e) => {setPersonData({...personData, lastName: e.target.value})}}
             />
+
+            {/* email entry field */}
             <TextField
               required
               fullWidth
@@ -216,11 +219,12 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
               onChange={(e) => {setPersonData({...personData, email: e.target.value})}}
             />
           </div>
-        
+          {/* profile photo */}
           <img style={{width: "14rem", height: "14rem", padding: "1rem", borderRadius: "50%"}} src={photoUrl ? photoUrl : profileImage} alt="Profile Photo" />
         </div>
         
         {/* field for date of birth */}
+
         <div className="horizButtons">
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
