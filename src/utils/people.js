@@ -15,7 +15,9 @@ const addPerson = async (collectionName, person, role) => {
     lastName: person.lastName,
     classIDs: [],
     role: role,
-    dateOfBirth: Timestamp.fromDate(person.dateOfBirth.toDate())
+    dateOfBirth: Timestamp.fromDate(person.dateOfBirth.toDate()),
+    email: person.email,
+    profilePhoto: person.profilePhoto
   })
 }
 

@@ -58,7 +58,6 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
         "Content-Type": profilePhoto.type,
       },
     });
-
     setPersonData({...personData, profilePhoto: fileKey});
   }
 
@@ -140,7 +139,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       if (!isStudent) err3 = true; // students roles are always student
     } else if (personData.dateOfBirth === undefined) {
       err4 = true;
-    } else if (personData.email === "") {
+    } else if (personData.email === undefined) {
       err5 = true;
     }
     setErrors({one: err1, two: err2, three: err3, four: err4, five: err5});
