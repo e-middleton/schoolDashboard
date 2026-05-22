@@ -9,9 +9,10 @@ import App from './App.jsx';
 import Home from './pages/Home.jsx';
 import ClassDirectory from './pages/ClassDirectory.jsx'
 import StudentDirectory from './pages/StudentDirectory.jsx';
-import TeacherDirectory from './pages/TeacherDirectory.jsx';
+import FacultyDirectory from './pages/FacultyDirectory.jsx';
 import Calendar from './pages/Calendar.jsx'
 import ClassDetail from "./pages/ClassDetail.jsx"
+import GradeManagement from "./pages/GradeManagement.jsx"
 
 import './index.css'
 
@@ -33,8 +34,8 @@ const router = createBrowserRouter([
         element: <StudentDirectory />
       },
       {
-        path: "/teacher-directory",
-        element: <TeacherDirectory />
+        path: "/faculty-directory",
+        element: <FacultyDirectory />
       },
       {
         path: "/calendar",
@@ -43,13 +44,17 @@ const router = createBrowserRouter([
       {
         path: "/class-directory/:id",
         element: <ClassDetail />
+      },
+      {
+        path: "/grades/:classID/:studentID",
+        element: <GradeManagement />
       }
     ],
   },
 ])
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>,
+  // </StrictMode>,
 )

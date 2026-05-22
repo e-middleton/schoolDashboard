@@ -18,7 +18,7 @@ function App() {
           <div className="nav-leftalign">
             <NavLink to="/class-directory" className="nav-link">Class Directory</NavLink>
             <NavLink to="/student-directory" className="nav-link">Student Directory</NavLink>
-            <NavLink to="/teacher-directory" className="nav-link">Teacher Directory</NavLink>
+            <NavLink to="/faculty-directory" className="nav-link">Faculty Directory</NavLink>
           </div>
 
           <NavLink to="/calendar" className="nav-link">Calendar</NavLink>
