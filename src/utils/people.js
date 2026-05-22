@@ -21,6 +21,7 @@ const addPerson = async (collectionName, person, role) => {
 
 const updatePerson = async (collectionName, person) => {
   person.dateOfBirth = Timestamp.fromDate(person.dateOfBirth.toDate())
+  delete person.photoUrl;
   await updateDoc(doc(db, collectionName, person.id), person); // ideally should include the updated field
 }
 
