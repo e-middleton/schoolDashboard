@@ -22,30 +22,14 @@ const GradeManagement = () => {
   
   /*
   todo:
-
-  - validate grade input; error message
-    - make all fields required
-    both:
-    - can't be empty
-
-    grade:
-    - prevent typing non-numbers; float allowed
-  - edit grade
-    - UI + firebase
-  (done) - delete grade
-  - user waiting states: adding grade...; deleting grade...
-
-  -----------
   - navigation: params, back button (class page), need to know which class came from
   - get + display class name, class ID
-  -----------
-  - ignore: grade calculation algorithm
   */
 
   const params = useParams(); // {classID: 01, studentID: 01}
 
-  // console.log(calculateStudentAverage(params.classID, params.studentID));
-  calculateClassAverage(params.classID);
+  console.log(calculateStudentAverage(params.classID, params.studentID));
+  // calculateClassAverage(params.classID);
 
   // Grades for the student and class being viewed
   const [gradeData, setGradeData] = useState({});
