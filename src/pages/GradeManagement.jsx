@@ -1,16 +1,18 @@
-import "../styling/GradeManagement.css"
-import { fetchGradeDocument, createGradeDocument } from "../utils/grades.js"
-import { calculateStudentAverage, calculateClassAverage } from "../utils/gradeCalculations.js"
+import "../styling/GradeManagement.css";
 
-import { fetchStudentDocument } from "../utils/people.js"
-import { fetchClassDocument } from "../utils/classes.js"
+import { fetchGradeDocument, createGradeDocument } from "../utils/grades.js";
+import { fetchStudentDocument } from "../utils/people.js";
+import { fetchClassDocument } from "../utils/classes.js";
+import { calculateStudentAverage } from "../utils/gradeCalculations.js";
 
-import GradeForm from "../components/GradeForm.jsx"
-import GradeCategoryDropdown from "../components/GradeCategoryDropdown.jsx"
+// Components displayed
+import GradeForm from "../components/GradeForm.jsx";
+import GradeCategoryDropdown from "../components/GradeCategoryDropdown.jsx";
 
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router';
 
+// MUI
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -22,12 +24,6 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 const GradeManagement = () => {
-  
-  /*
-  todo:
-  - navigation: params, back button (class page), need to know which class came from
-  - get + display class name, class ID
-  */
 
   /* navigate to grade management page */
   const navigate = useNavigate();
@@ -59,19 +55,18 @@ const GradeManagement = () => {
   /* Fetch grade data for class and student viewed*/
   useEffect(() => {
     const getData = async () => {
-      const [gradeDocument, classDocument, studentDocument] = await Promise.all([
-        fetchGradeDocument(params.classID, params.studentID),
+      const gradeDocument = await fetchGradeDocument(params.classID, params.studentID);
+      const [classDocument, studentDocument, studentAverage] = await Promise.all([
         fetchClassDocument(params.classID),
-        fetchStudentDocument(params.studentID)
+        fetchStudentDocument(params.studentID),
+        calculateStudentAverage(params.classID, params.studentID)
       ])
-      // const gradeDocument = await fetchGradeDocument(params.classID, params.studentID);
-      // const classDocument = await fetchClassDocument(params.classID)
-      // const studentDocument = await fetchStudentDocument(params.studentID);
 
       setGradeData({
         ...gradeDocument,
         className: `${classDocument.className}`,
         studentName: `${studentDocument.firstName} ${studentDocument.lastName}`,
+        studentAverage: studentAverage
       });
     }
     getData();
@@ -105,11 +100,11 @@ const GradeManagement = () => {
   }
 
   // console.log(gradeFormInput);
-  console.log("params");
-  console.log(params);
+  // console.log("params");
+  // console.log(params);
 
-  console.log("grade document");
-  console.log(gradeData);
+  // console.log("grade document");
+  // console.log(gradeData);
 
   const isLoading = !gradeData || Object.keys(gradeData).length === 0;
 
@@ -199,7 +194,7 @@ const GradeManagement = () => {
 
       {/* Right side - Student Overall Grade, Info*/}
       <Grid container direction="column" size={3} spacing={2}>
-        <h3>Grade: 94.8%</h3>
+        <h3>Grade: {gradeData.studentAverage ? `${gradeData.studentAverage}%`: "N/A"}</h3>
         <h3>Assignments are weighted by group:</h3>
         <Grid container direction="column" spacing={0.5}>
           <p>Quizzes 20%</p>

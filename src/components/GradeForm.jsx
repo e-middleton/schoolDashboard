@@ -42,7 +42,7 @@ const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refres
       }
 
       if(!editing) {
-        console.log("creating new grade record")
+        // console.log("creating new grade record")
         success = await addGradeRecord({ // create new grade record
           ...gradeFormInput,
           classID: params.classID,
@@ -60,8 +60,8 @@ const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refres
       }
 
       // error: assignment name already used
-      console.log("success is:")
-      console.log(success);
+      // console.log("success is:")
+      // console.log(success);
       if(!success) {
         setMessage(`Assignment with name ${gradeFormInput.assignmentName} already exists in the selected category.`);
         return;
