@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import "../styling/SearchPage.css";
-import {List, ListItem, IconButton, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
+import {List, IconButton, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -146,32 +146,36 @@ const FacultyDirectory = () => {
               }} >
                 {/* Map the teachers to list elements */}
                 {teachers.map( (teacher)  => (
-                  <ListItem key={teacher.id}>
+                  <li className="person-entry" key={teacher.id}>
+                    <div className="photo-and-name">
                       <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={teacher.photoUrl ? teacher.photoUrl : profileImage} alt="Profile photo"/>
                       <ListItemText
                         primary={ `${teacher.firstName} ${teacher.lastName}` }
                         secondary={teacher.role}
                       >
                       </ListItemText>
+                    </div>
                       <Button 
-                      sx={{backgroundColor:"#3877A6"}}
+                      sx={{backgroundColor:"#3877A6", width: "fit-content", height: "fit-content"}}
                       variant="contained"
                       onClick={() => handleFacultyUpdate(teacher)}
                       >
                         View
                       </Button>
-                  </ListItem>
+                  </li>
                 ))}
                 
                 {/* map the administrative faculty to list elements */}
                 {admin.map( (admin) => (
-                  <ListItem key={admin.id}>
-                    <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={admin.photoUrl ? admin.photoUrl : profileImage} alt="Profile photo"/>
-                    <ListItemText
-                    primary={`${admin.firstName} ${admin.lastName}`}
-                    secondary={admin.role}
-                    >
-                    </ListItemText>
+                  <li className="person-entry" key={admin.id}>
+                    <div className="photo-and-name">
+                      <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={admin.photoUrl ? admin.photoUrl : profileImage} alt="Profile photo"/>
+                      <ListItemText
+                      primary={`${admin.firstName} ${admin.lastName}`}
+                      secondary={admin.role}
+                      >
+                      </ListItemText>
+                    </div>
                     <Button 
                       sx={{backgroundColor:"#3877A6"}}
                       variant="contained"
@@ -179,7 +183,7 @@ const FacultyDirectory = () => {
                       >
                         View
                       </Button>
-                  </ListItem>
+                  </li>
                 ))}
               </List>
             </div>

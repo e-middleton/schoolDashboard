@@ -1,6 +1,6 @@
 import './../styling/SearchPage.css';
 import playground from '../assets/playground.png';
-import {List, ListItem, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
+import {List, ListItemText, Box, TextField, Button, InputAdornment }from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { fetchAllPeople } from "../utils/people";
@@ -131,20 +131,22 @@ const StudentDirectory = () => {
               }} >
                 {/* Map the students to list elements */}
                 {students.map( (student)  => (
-                  <ListItem key={student.id}>
-                      <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={student.photoUrl ? student.photoUrl : profileImage} alt="Profile photo"/>
-                      <ListItemText
-                        primary={ `${student.firstName} ${student.lastName}` }
-                      >
-                      </ListItemText>
+                  <li key={student.id} className="person-entry">
+                      <div className="photo-and-name">
+                        <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={student.photoUrl ? student.photoUrl : profileImage} alt="Profile photo"/>
+                        <ListItemText
+                          primary={ `${student.firstName} ${student.lastName}` }
+                        >
+                        </ListItemText>
+                      </div>
                       <Button 
-                      sx={{backgroundColor:"#3877A6"}}
+                      sx={{backgroundColor:"#3877A6", width: "fit-content", height: "fit-content"}}
                       variant="contained"
                       onClick={() => handleStudentUpdate(student)}
                       >
                         View
                       </Button>
-                  </ListItem>
+                  </li>
                 ))}
               </List>
             </div>
