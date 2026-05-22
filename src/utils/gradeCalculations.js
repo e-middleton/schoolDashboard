@@ -1,3 +1,12 @@
+
+
+/*
+------------
+Contains functions for calculating student average and class average grades
+------------
+*/
+
+
 import { gradeCategoryToWeight, fetchGradeDocument } from "./grades.js"
 import { fetchClassDocument } from "./classes.js"
 

@@ -25,6 +25,10 @@ import { db } from "../../firebase";
 const ClassDetail = () => {
     const { id } = useParams();
 
+
+    /* navigate to grade management page */
+	const navigate = useNavigate();
+
     const default_image = "https://elements-resized.envatousercontent.com/envato-dam-assets-production/EVA/TRX/5f/24/43/3b/86/v1_E10/E1042C7G.jpg?w=500&cf_fit=scale-down&mark-alpha=18&mark=https%3A%2F%2Felements-assets.envato.com%2Fstatic%2Fwatermark4.png&q=85&format=auto&s=6c9d85d29a12ab8b6c345c81d0e9cfba8e3f65525c4b177e460e89f82b2febd9"
     const notfound_image = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png"
 
@@ -230,9 +234,14 @@ const ClassDetail = () => {
                                     <Card key={s.id} sx={{ backgroundColor: "#FFFDE8", mb: 2 }}>
                                     <CardContent>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
-                                        <span>Avg: {calculateStudentAverage(g)}</span>
-                                         </div>
+											<span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
+
+											<div style={{display: "flex", gap: "1rem", "alignItems": "center"}}>
+												<span>Avg: {calculateStudentAverage(g)}</span>
+												<Button onClick={() => navigate(`/grades/${currentClass.id}/${s.id}`)}
+													sx={{ "backgroundColor": "#11578A", "color": "white" }} variant="contained">Edit Grades</Button>
+											</div>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             );

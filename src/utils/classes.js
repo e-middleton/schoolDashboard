@@ -39,7 +39,7 @@ const fetchAllClasses = async () => {
 // function for fetching a specific class document
 const fetchClassDocument = async (targetClassID) => {
   const parsedSnapshot = await fetchAllClasses();
-  return parsedSnapshot.find((doc) => (doc.classID === targetClassID));
+  return parsedSnapshot.find((doc) => (doc.id === targetClassID));
 };
 
 export { classes, fetchAllClasses, fetchClassDocument };

@@ -30,41 +30,35 @@ const categoryToProperty = {
   "Projects": "projectGrades"
 }
 
+// create initial grade document
+const createGradeDocument = async (targetClassID, targetStudentID) => {
+  const newDocument = {
+    ...gradeStructure,
+    classID: targetClassID,
+    studentID: targetStudentID
+  };
+  const docRef = await addDoc(collection(db, "grades"), newDocument);
+  return { id: docRef.id, ...newDocument };
+}
+
 // retrieve all grade records from the database for a specified **class and **student
 const fetchGradeDocument = async (targetClassID, targetStudentID) => {
   const querySnapshot = await getDocs(collection(db, "grades"));
   const parsedSnapshot = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
 
   // Search by class and student
-  const matchingGradeDocument = parsedSnapshot.find((grade) => 
+  const matchingGradeDocument = parsedSnapshot.find((grade) =>
     grade.classID == targetClassID && grade.studentID == targetStudentID);
 
-  // if(matchingGradeDocument) {
-  //   console.log("matching grade document found");
-  //   console.log(matchingGradeDocument);
-  // }
-  // else {
-  //   console.log("error: matching grade document not found")
-  // }
-  return matchingGradeDocument;
-};
-
-
-// create initial grade document
-const createGradeDocument = async (targetClassID, targetStudentID) => {
-  // if time: check that record doesn't already exist -> if does, prevent create
-  const gradeDocument = await fetchGradeDocument(targetClassID, targetStudentID);
-  // initial grade document doesn't exist
-  if(gradeDocument) {
-    console.log("error: failed to create grade document - already exists")
+  if(matchingGradeDocument) {
+    console.log("matching grade document found");
+    console.log(matchingGradeDocument);
+    return matchingGradeDocument;
   }
 
-  await addDoc(collection(db, "grades"), {
-    ...gradeStructure,
-    classID: targetClassID,
-    studentID: targetStudentID
-  })
-}
+  console.log("matching grade document not found - initializing new grade document");
+  return await createGradeDocument(targetClassID, targetStudentID);
+};
 
 // ------------add a new record to the grade document for a specified **class and **student
     // -> returns false if assignmentName already exists

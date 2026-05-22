@@ -15,7 +15,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 
-const AccordianDropdown = ({ label, gradeData, category, setMessage, refreshToggle, setRefreshToggle, openEditingForm }) => {
+const GradeCategoryDropdown = ({ label, gradeData, category, setMessage, refreshToggle, setRefreshToggle, openEditingForm }) => {
 
   // Delete grade record
   const handleDelete = async (record, targetClassID, targetStudentID) => {
@@ -88,4 +88,4 @@ const AccordianDropdown = ({ label, gradeData, category, setMessage, refreshTogg
   )
 }
 
-export default AccordianDropdown;
+export default GradeCategoryDropdown;

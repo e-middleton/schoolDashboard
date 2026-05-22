@@ -20,13 +20,6 @@ import { useEffect } from "react";
 
 const ClassDirectory = () => {
 
-  /*
-  todo:
-  - implement search -> filter by name
-  - implement add class -> nav
-  - implement delete class -> option to select classes to delete
-  - implement view dashboard -> dynamically navigates to class page
-  */
   const [classes, setClasses] = useState([]);
 
   /* navigate to detail class page */
@@ -56,12 +49,8 @@ const ClassDirectory = () => {
   return (
     
     <div className="classdirectory-div">
-      CLASS DIRECTORY LOADED
       {/* Header */}
       <h1>Class Directory</h1>
-
-      <h2>You may notice that the card formatting looks a bit strange after the component change...</h2>
-      <p>I will ensure to fix it in my next push on this branch! :D</p>
 
       {/* Search bar and add, delete buttons */}
       <div className="actions-div">

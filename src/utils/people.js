@@ -35,4 +35,11 @@ const deletePerson = async (collectionName, person) => {
   await deleteDoc(doc(db, collectionName, person.id))
 }
 
-export { fetchAllPeople, addPerson, updatePerson, deletePerson };
+// function for fetching a specific student document
+const fetchStudentDocument = async (targetStudentID) => {
+  const parsedSnapshot = await fetchAllPeople("students");
+  return parsedSnapshot.find((doc) => (doc.id === targetStudentID));
+};
+
+
+export { fetchAllPeople, addPerson, updatePerson, deletePerson, fetchStudentDocument };
