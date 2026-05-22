@@ -53,8 +53,9 @@ const ClassDirectory = () => {
         createdAt: new Date()
       };
 
-      await addDoc(collection(db, "classes"), newClass);
+      const docRef = await addDoc(collection(db, "classes"), newClass);
       fetchClasses();
+      navigate(`/class-directory/${docRef.id}`);
 
     } catch (err) {
       console.error("Error adding class:", err);

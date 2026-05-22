@@ -129,10 +129,6 @@ const ClassDetail = () => {
         return grades.find(g => g.studentID === studentID);
     };
 
-    if (students.length === 0) {
-        return <p>No students in this class.</p>
-    }
-
     // search filter 
     const filteredStudents = students.filter((student) => `${student.firstName} ${student.lastName}`
         .toLowerCase().includes(search.toLowerCase()));
@@ -207,8 +203,11 @@ const ClassDetail = () => {
                 </div>
                         
                 <div style={{ marginTop: "2rem" }}>
-                    {filteredStudents.length === 0 ? (
-                        <p>No Students Found.</p>) : (
+                    {students.length === 0 ? (
+                        <p>No students in this class yet.</p>
+                    ) : filteredStudents.length === 0 ? (
+                        <p>No Students Found.</p>
+                    ) : (
                             filteredStudents.map((s) => {
                                 const g = getGradeByStudent(s.id);
 
