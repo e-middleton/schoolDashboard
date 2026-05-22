@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase.js';
 
 // Mock data for calendar events. For testing/demo purposes
+=======
+import { doc, setDoc } from 'firebase/firestore';
+
+import { db } from '../../firebase.js';
+
+>>>>>>> 6c9de20 (feat: connected events to firebase)
 export const calendarEvents = [
 	{
 		eventName: 'Library Visit',
@@ -116,6 +123,7 @@ export const calendarEvents = [
 	},
 ];
 
+<<<<<<< HEAD
 // Helper function to convert time string to minutes for duration calculation
 const parseTimeToMinutes = (timeStr) => {
 	const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -141,10 +149,14 @@ const computeDurationStr = (start, end) => {
 // Generate Firestore-safe document ID based on event properties
 // Helpful for insert/delete operations
 export const makeEventDocId = (eventItem) => `${eventItem.date}-${(eventItem.eventName || eventItem.title)}-${eventItem.startTime}`
+=======
+const makeEventDocId = (eventItem) => `${eventItem.date}-${eventItem.title}-${eventItem.startTime}`
+>>>>>>> 6c9de20 (feat: connected events to firebase)
 	.toLowerCase()
 	.replace(/[^a-z0-9]+/g, '-')
 	.replace(/^-+|-+$/g, '');
 
+<<<<<<< HEAD
 // Update existing events or insert new events in the in-memory array (not the Firebase collection)
 const upsertCalendarEventInMemory = (eventItem, docId) => {
 	const nextEvent = { ...eventItem, docId };
@@ -184,6 +196,8 @@ export const deleteCalendarEvent = async (eventItem, docId = makeEventDocId(even
 
 // Seed the Firebase collection with the mock calendar events (for testing/demo purposes)
 // Can be commented out after demo/testing to avoid duplicate entries on every app start
+=======
+>>>>>>> 6c9de20 (feat: connected events to firebase)
 const seedCalendarEvents = async () => {
 	await Promise.all(
 		calendarEvents.map((eventItem) => setDoc(doc(db, 'events', makeEventDocId(eventItem)), eventItem)),
