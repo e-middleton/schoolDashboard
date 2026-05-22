@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 
 
+
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -23,7 +24,17 @@ import { initializeGradesForClass, createGradeForStudent } from "../utils/gradeS
 import { useNavigate } from "react-router-dom";
 import ClassCard from "../components/ClassCard"
 import { useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { TextField, InputAdornment } from '@mui/material';
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    doc,
+    updateDoc,
+    arrayUnion,
+    arrayRemove
+} from "firebase/firestore";
 import { db } from "../../firebase";
 
 const ClassDetail = () => {
@@ -31,7 +42,7 @@ const ClassDetail = () => {
 
 
     /* navigate to grade management page */
-	const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const default_image = "https://elements-resized.envatousercontent.com/envato-dam-assets-production/EVA/TRX/5f/24/43/3b/86/v1_E10/E1042C7G.jpg?w=500&cf_fit=scale-down&mark-alpha=18&mark=https%3A%2F%2Felements-assets.envato.com%2Fstatic%2Fwatermark4.png&q=85&format=auto&s=6c9d85d29a12ab8b6c345c81d0e9cfba8e3f65525c4b177e460e89f82b2febd9"
     const notfound_image = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/330px-Placeholder_view_vector.svg.png"
@@ -43,6 +54,12 @@ const ClassDetail = () => {
     const [classAverage, setClassAverage] = useState(0);
     const [grades, setGrades] = useState([]);
     const [search, setSearch] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedClassName, setEditedClassName] = useState("");
+    const [allStudents, setAllStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState("");
+    const [allTeachers, setAllTeachers] = useState([]);
+    const [selectedTeacher, setSelectedTeacher] = useState("");
 
     // fetch current class
     useEffect(() => {
@@ -60,7 +77,13 @@ const ClassDetail = () => {
     //fetch students of current class
     useEffect(() => {
         const fetchStudents = async () => {
-            if (!currentClass?.studentIDs) return;
+            if (!currentClass?.studentIDs) {
+                setStudents([]);
+                return;
+            }
+            if (editedClassName === "") {
+                setEditedClassName(currentClass.className);
+            }
 
             const allStudents = await fetchAllPeople("students");
             const classStudents = allStudents.filter(s => currentClass.studentIDs.includes(s.id));
@@ -102,7 +125,7 @@ const ClassDetail = () => {
     // fetch teacher(s) of current class
     useEffect(() => {
         const fetchTeacher = async () => {
-            if (!currentClass?.teacherID) return;
+            if (!currentClass?.teacherIDs) return;
 
             const snapshot = await getDocs(collection(db, "teachers"));
 
@@ -110,13 +133,136 @@ const ClassDetail = () => {
                 id: doc.id,
                 ...doc.data()
             })
-            ).filter(t => currentClass.teacherID.includes(t.id));
+            ).filter(t => currentClass.teacherIDs.includes(t.id));
 
             setTeacher(classTeacher);
         };
 
         fetchTeacher();
     }, [currentClass]);
+
+    // fetch all students for dropdown
+    useEffect(() => {
+
+        const fetchAllStudents = async () => {
+
+            const snapshot = await getDocs(collection(db, "students"));
+
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            setAllStudents(data);
+        };
+
+        fetchAllStudents();
+
+    }, []);
+
+    // fetch all teachers
+    useEffect(() => {
+
+        const fetchAllTeachers = async () => {
+
+            const snapshot = await getDocs(collection(db, "teachers"));
+
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            setAllTeachers(data);
+        };
+
+        fetchAllTeachers();
+
+    }, []);
+
+    const addStudentToClass = async () => {
+
+        if (!selectedStudent) return;
+
+        try {
+
+            const classRef = doc(db, "classes", currentClass.id);
+
+            await updateDoc(classRef, {
+                studentIDs: arrayUnion(selectedStudent)
+            });
+
+            // refresh class data
+            const updatedClass = await fetchClassDocument(id);
+
+            setCurrentClass(updatedClass);
+
+            setSelectedStudent("");
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const addTeacherToClass = async () => {
+
+        if (!selectedTeacher) return;
+
+        try {
+
+            const classRef = doc(db, "classes", currentClass.id);
+
+            await updateDoc(classRef, {
+                teacherIDs: arrayUnion(selectedTeacher)
+            });
+
+            // refresh class
+            const updatedClass = await fetchClassDocument(id);
+            setCurrentClass(updatedClass);
+
+            setSelectedTeacher("");
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const removeStudentFromClass = async (studentId) => {
+
+        try {
+
+            const classRef = doc(db, "classes", currentClass.id);
+
+            await updateDoc(classRef, {
+                studentIDs: arrayRemove(studentId)
+            });
+
+            // refresh class
+            const updatedClass = await fetchClassDocument(id);
+
+            setCurrentClass(updatedClass);
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const removeTeacherFromClass = async (teacherId) => {
+
+        try {
+
+            const classRef = doc(db, "classes", currentClass.id);
+
+            await updateDoc(classRef, {
+                teacherIDs: arrayRemove(teacherId)
+            });
+
+            const updatedClass = await fetchClassDocument(id);
+            setCurrentClass(updatedClass);
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     if (!currentClass) {
         return <div>Class not found</div>
@@ -129,8 +275,8 @@ const ClassDetail = () => {
         return grades.find(g => g.studentID === studentID);
     };
 
-    if (students.length === 0) {
-        return <p>No students in this class.</p>
+    if (!currentClass) {
+        return <div>Class not found</div>;
     }
 
     // search filter 
@@ -152,12 +298,65 @@ const ClassDetail = () => {
 
                     <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", alignItems: "space-between", justifyContent: "center" }}>
                         <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <h2 style={{ margin: 0, fontSize: "2rem", fontWeight: 600, color: '#11578A' }}>
-                                {currentClass.className}
-                            </h2>
-                            <Button sx={{ "backgroundColor": "#11578A", "color": "white", whiteSpace: "npwrap", ml: 2 }} variant="contained">
-                                Edit Class Info
-                            </Button>
+                            {isEditing ? (
+                                <div style={{ width: "100%" }}>
+                                    <InputBase
+                                        value={editedClassName}
+                                        onChange={(e) => setEditedClassName(e.target.value)}
+                                        sx={{
+                                            border: "1px solid #ccc",
+                                            borderRadius: "8px",
+                                            padding: "0.5rem 1rem",
+                                            width: "100%",
+                                            fontSize: "1.5rem",
+                                            mb: 2,
+                                        }}
+                                    />
+
+                                    <Button
+                                        sx={{
+                                            backgroundColor: "#11578A",
+                                            color: "white",
+                                        }}
+                                        variant="contained"
+                                        onClick={async () => {
+                                            await updateDoc(doc(db, "classes", currentClass.id), {
+                                                className: editedClassName
+                                            });
+                                            setIsEditing(false);
+                                        }}
+
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <h2
+                                        style={{
+                                            margin: 0,
+                                            fontSize: "2rem",
+                                            fontWeight: 600,
+                                            color: "#11578A",
+                                        }}
+                                    >
+                                        {currentClass.className}
+                                    </h2>
+
+                                    <Button
+                                        sx={{
+                                            backgroundColor: "#11578A",
+                                            color: "white",
+                                            whiteSpace: "nowrap",
+                                            ml: 2,
+                                        }}
+                                        variant="contained"
+                                        onClick={() => setIsEditing(true)}
+                                    >
+                                        Edit Class Info
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Average class grade */}
@@ -166,63 +365,198 @@ const ClassDetail = () => {
                         </div>
                     </div>
 
+                    <div style={{ marginTop: "1rem", display: "flex", gap: "1rem", alignItems: "center" }}>
+
+                        <select 
+                            value={selectedTeacher}
+                            onChange={(e) => setSelectedTeacher(e.target.value)}
+                            style={{
+                                height: "40px",
+                                padding: "0 10px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc"
+                            }}
+                        >
+
+                            <option value="">Select Teacher</option>
+
+                            {allTeachers
+                                .filter(t => !currentClass?.teacherIDs?.includes(t.id))
+                                .map((teacher) => (
+
+                                    <option key={teacher.id} value={teacher.id}>
+                                        {teacher.firstName} {teacher.lastName}
+                                    </option>
+                                ))}
+
+                        </select>
+
+                        <Button
+                            sx={{ backgroundColor: "#11578A", color: "white" }}
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={addTeacherToClass}
+                        >
+                            Add Teacher
+                        </Button>
+
+                    </div>
                     {/* Teacher Card */}
                     <Card sx={{ marginTop: "2rem", backgroundColor: "#FFFDEB" }}>
                         {teachers.map((t) => (
                             <CardContent key={t.id}>
+
                                 <div style={{ display: "flex", justifyContent: "space-between" }}>
+
                                     <Typography variant="h5">
-                                        <span>{t.firstName} {t.lastName}</span>
+                                        {t.firstName} {t.lastName}
                                     </Typography>
+
+                                    <Button
+                                        onClick={() => removeTeacherFromClass(t.id)}
+                                        sx={{
+                                            backgroundColor: "#CE2626",
+                                            color: "white"
+                                        }}
+                                        variant="contained"
+                                        startIcon={<DeleteIcon />}
+                                    >
+                                        Remove
+                                    </Button>
+
                                 </div>
 
                             </CardContent>
-                        )
-                        )}
+                        ))}
                     </Card>
                 </Box>
             </Grid>
 
             {/*right side */}
             <Grid size={{ xs: 12, md: 8 }}>
-                <Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem", mb: 2, backgroundColor: "#D3D3D3", borderRadius: "4px", px: 1 }}>
-                        <div className="search-bar">
-                            <SearchIcon />
-                            <InputBase
-                                placeholder="Search for student by name…"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                sx={{ flexGrow: "1" }}
-                            />
-                        </div>
-                    </Box>
+                <Box component="form" className="searchForm" sx={{ mb: 2 }}>
+                    <TextField
+                        sx={{
+                            backgroundColor: "#fffdeb",
+                            borderRadius: "10px",
+                            boxShadow: "2px 2px 12px 1px #d2d2d2",
+                        }}
+                        fullWidth
+                        label="Search for student by name"
+                        placeholder="Jane Doe"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                            }
+                        }}
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <SearchIcon />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
                 </Box>
 
 
 
-                <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
-                    <Button sx={{ "backgroundColor": "#11578A", "color": "white" }} variant="contained" startIcon={<AddIcon />}>Add Student</Button>
-                    <Button sx={{ "backgroundColor": "#CE2626", "color": "white" }} variant="contained" startIcon={<DeleteIcon />}>Delete Student</Button>
+                <div style={{ marginTop: "1rem", display: "flex", gap: "1rem", alignItems: "center" }}>
+
+                    <select
+                        value={selectedStudent}
+                        onChange={(e) => setSelectedStudent(e.target.value)}
+                        style={{
+                            padding: "10px",
+                            borderRadius: "8px",
+                            minWidth: "220px"
+                        }}
+                    >
+
+                        <option value="">Select Student</option>
+
+                        {allStudents
+                            .filter(
+                                s => !currentClass.studentIDs.includes(s.id)
+                            )
+                            .map((student) => (
+
+                                <option
+                                    key={student.id}
+                                    value={student.id}
+                                >
+                                    {student.firstName} {student.lastName}
+
+                                </option>
+                            ))}
+
+
+                    </select>
+
+                    <Button
+                        sx={{
+                            backgroundColor: "#11578A",
+                            color: "white"
+                        }}
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={addStudentToClass}
+                    >
+                        Add Student
+                    </Button>
+
                 </div>
-                        
+
                 <div style={{ marginTop: "2rem" }}>
                     {filteredStudents.length === 0 ? (
                         <p>No Students Found.</p>) : (
-                            filteredStudents.map((s) => {
-                                const g = getGradeByStudent(s.id);
+                        filteredStudents.map((s) => {
+                            const g = getGradeByStudent(s.id);
 
-                                return (
-                                    <Card key={s.id} sx={{ backgroundColor: "#FFFDE8", mb: 2 }}>
+                            return (
+                                <Card key={s.id} sx={{ backgroundColor: "#FFFDE8", mb: 2 }}>
                                     <CardContent>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-											<span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
+                                            <span>{s.firstName || s.id}{" "}{s.lastName || s.id}</span>
 
-											<div style={{display: "flex", gap: "1rem", "alignItems": "center"}}>
-												<span> {s.studentAverage ? `Avg: ${s.studentAverage}%` : "No grades yet."}</span>
-												<Button onClick={() => navigate(`/grades/${currentClass.id}/${s.id}`)}
-													sx={{ "backgroundColor": "#11578A", "color": "white" }} variant="contained">Edit Grades</Button>
-											</div>
+                                            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+
+                                                <span>
+                                                    {s.studentAverage
+                                                        ? `Avg: ${s.studentAverage}%`
+                                                        : "No grades yet."}
+                                                </span>
+
+                                                <Button
+                                                    onClick={() =>
+                                                        navigate(`/grades/${currentClass.id}/${s.id}`)
+                                                    }
+                                                    sx={{
+                                                        backgroundColor: "#11578A",
+                                                        color: "white"
+                                                    }}
+                                                    variant="contained"
+                                                >
+                                                    Edit Grades
+                                                </Button>
+
+                                                <Button
+                                                    onClick={() => removeStudentFromClass(s.id)}
+                                                    sx={{
+                                                        backgroundColor: "#CE2626",
+                                                        color: "white"
+                                                    }}
+                                                    variant="contained"
+                                                    startIcon={<DeleteIcon />}
+                                                >
+                                                    Remove
+                                                </Button>
+
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -230,7 +564,7 @@ const ClassDetail = () => {
                         })
                     )}
                 </div>
-                
+
             </Grid>
         </Grid>
     );
