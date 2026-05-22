@@ -47,7 +47,7 @@ npm install
 
 ```bash
 cd server
-npm start
+node server.js
 ```
 
 4. Start the frontend in a second terminal from the project root:
