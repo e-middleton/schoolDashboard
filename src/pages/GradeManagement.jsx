@@ -2,11 +2,14 @@ import "../styling/GradeManagement.css"
 import { fetchGradeDocument, createGradeDocument } from "../utils/grades.js"
 import { calculateStudentAverage, calculateClassAverage } from "../utils/gradeCalculations.js"
 
+import { fetchStudentDocument } from "../utils/people.js"
+import { fetchClassDocument } from "../utils/classes.js"
+
 import GradeForm from "../components/GradeForm.jsx"
-import AccordianDropdown from "../components/AccordianDropdown.jsx"
+import GradeCategoryDropdown from "../components/GradeCategoryDropdown.jsx"
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router'
+import { useParams, useNavigate } from 'react-router'
 
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -26,9 +29,12 @@ const GradeManagement = () => {
   - get + display class name, class ID
   */
 
+  /* navigate to grade management page */
+  const navigate = useNavigate();
+
   const params = useParams(); // {classID: 01, studentID: 01}
 
-  console.log(calculateStudentAverage(params.classID, params.studentID));
+  // console.log(calculateStudentAverage(params.classID, params.studentID));
   // calculateClassAverage(params.classID);
 
   // Grades for the student and class being viewed
@@ -49,16 +55,30 @@ const GradeManagement = () => {
   // Input Values
   const [gradeFormInput, setGradeFormInput] = useState(gradeFormDefault);
 
-  // Fetch grade data for class and student viewed
+
+  /* Fetch grade data for class and student viewed*/
   useEffect(() => {
     const getData = async () => {
-      const data = await fetchGradeDocument(params.classID, params.studentID)
-      setGradeData(data);
+      const [gradeDocument, classDocument, studentDocument] = await Promise.all([
+        fetchGradeDocument(params.classID, params.studentID),
+        fetchClassDocument(params.classID),
+        fetchStudentDocument(params.studentID)
+      ])
+      // const gradeDocument = await fetchGradeDocument(params.classID, params.studentID);
+      // const classDocument = await fetchClassDocument(params.classID)
+      // const studentDocument = await fetchStudentDocument(params.studentID);
+
+      setGradeData({
+        ...gradeDocument,
+        className: `${classDocument.className}`,
+        studentName: `${studentDocument.firstName} ${studentDocument.lastName}`,
+      });
     }
     getData();
     // createGradeDocument(params.classID, params.studentID);
   }, [refreshToggle])
 
+  
   // Open form to create new grade record
   const openNewForm = () => {
     setGradeFormShown(true);
@@ -85,25 +105,36 @@ const GradeManagement = () => {
   }
 
   // console.log(gradeFormInput);
-  // console.log("params");
-  // console.log(params);
+  console.log("params");
+  console.log(params);
 
-  // console.log("grade document");
-  // console.log(gradeData);
-  
+  console.log("grade document");
+  console.log(gradeData);
+
+  const isLoading = !gradeData || Object.keys(gradeData).length === 0;
+
   return (
     <Grid container spacing={10} columns={12} sx={{"display": "flex", "justifyContent": "center"}}>
 
       {/* Left side */}
-      
+
       <Grid container direction="column" spacing={3} size={{ s: 14, md: 7}}>
         {/* Back Button */}
-        <Button sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/6}} startIcon={<ArrowBackIosIcon />} variant="contained">Back </Button>
-        
+        <Button
+          onClick={() => navigate(-1)}
+          sx={{"backgroundColor": "#11578A", "color": "white", "width": 1/6}} startIcon={<ArrowBackIosIcon />} variant="contained">
+            Back
+        </Button>
+
+        {isLoading && 
+            <h2>Loading grade data...</h2>
+        }
+
+        {!isLoading && <>
         {/* Header */}
         <Grid container spacing={0.5} direction="column">
-          <p>Class Name</p>
-          <h2>[Student Name]'s Grades</h2>
+          <p>{gradeData.className}</p>
+          <h2>{gradeData.studentName}'s Grades</h2>
         </Grid>
 
 
@@ -135,27 +166,33 @@ const GradeManagement = () => {
         }
 
         {/* List of Accordians for Grade Categories */}
-        {gradeData &&
-        <Grid container spacing={1}>
+        {gradeData ? 
+        (<Grid container spacing={1}>
 
           {/* todo: refactor if time */}
           
           {/* Quizzes */}
-          <AccordianDropdown label={"Quizzes"} gradeData={gradeData} category={"quizGrades"} setMessage={setMessage}
+          <GradeCategoryDropdown label={"Quizzes"} gradeData={gradeData} category={"quizGrades"} setMessage={setMessage}
             refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Participation */}
-          <AccordianDropdown label={"Participation"} gradeData={gradeData} category={"participationGrades"} setMessage={setMessage}
+          <GradeCategoryDropdown label={"Participation"} gradeData={gradeData} category={"participationGrades"} setMessage={setMessage}
             refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Projects */}
-          <AccordianDropdown label={"Projects"} gradeData={gradeData} category={"projectGrades"} setMessage={setMessage}
+          <GradeCategoryDropdown label={"Projects"} gradeData={gradeData} category={"projectGrades"} setMessage={setMessage}
             refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
           
           {/* Tests */}
-          <AccordianDropdown label={"Tests"} gradeData={gradeData} category={"testGrades"} setMessage={setMessage}
+          <GradeCategoryDropdown label={"Tests"} gradeData={gradeData} category={"testGrades"} setMessage={setMessage}
             refreshToggle={refreshToggle} setRefreshToggle={setRefreshToggle} openEditingForm={openEditingForm}/>
-        </Grid>}
+        </Grid>)
+        :
+        (<Card sx={{"boxShadow": "none", "flexGrow": 1, "bgcolor": "#F5F3E4", padding: "1rem", "width": "auto", "display": "flex", "justifyContent": "space-between", "flexDirection": "row"}}>
+          <p>Loading grades...</p>
+        </Card>)
+        }
+        </>}
 
       </Grid>
 
