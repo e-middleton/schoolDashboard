@@ -125,6 +125,12 @@ const ClassDetail = () => {
 
         const newTeacherID = editTeacher?.id || "";
 
+        // update teacher doc
+        const docRef = await getDoc(doc(db, "teachers", newTeacherID));
+        const teacher = { id: docRef.id, ...docRef.data() };
+        teacher.classIDs.push(currentClass.id);
+        updatePerson("teachers", teacher);
+
         await updateDoc(doc(db, "classes", id), {
             className: trimmedName,
             teacherID: newTeacherID
