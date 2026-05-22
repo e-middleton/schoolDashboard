@@ -136,6 +136,7 @@ const StudentDirectory = () => {
                         <img style={{width: "5rem", height: "5rem", padding: "1rem", borderRadius: "50%"}} src={student.photoUrl ? student.photoUrl : profileImage} alt="Profile photo"/>
                         <ListItemText
                           primary={ `${student.firstName} ${student.lastName}` }
+                          secondary={`ID: ${student.id}`}
                         >
                         </ListItemText>
                       </div>
