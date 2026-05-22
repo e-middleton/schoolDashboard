@@ -1,5 +1,6 @@
 import "../styling/GradeManagement.css"
 import { fetchGradeDocument, createGradeDocument } from "../utils/grades.js"
+import { calculateStudentAverage, calculateClassAverage } from "../utils/gradeCalculations.js"
 
 import GradeForm from "../components/GradeForm.jsx"
 import AccordianDropdown from "../components/AccordianDropdown.jsx"
@@ -43,6 +44,9 @@ const GradeManagement = () => {
 
   const params = useParams(); // {classID: 01, studentID: 01}
 
+  // console.log(calculateStudentAverage(params.classID, params.studentID));
+  calculateClassAverage(params.classID);
+
   // Grades for the student and class being viewed
   const [gradeData, setGradeData] = useState({});
   const [refreshToggle, setRefreshToggle] = useState(false); // triggers refresh on data update
@@ -52,12 +56,14 @@ const GradeManagement = () => {
   const [message, setMessage] = useState("");
   const [editing, setEditing] = useState(false); // true when a grade is being edited/updated
   
-  // Input Values
-  const [gradeFormInput, setGradeFormInput] = useState({
+  const gradeFormDefault = {
     assignmentName: "",
     assignmentGrade: "",
     assignmentCategory: ""
-  })
+  };
+
+  // Input Values
+  const [gradeFormInput, setGradeFormInput] = useState(gradeFormDefault);
 
   // Fetch grade data for class and student viewed
   useEffect(() => {
@@ -88,6 +94,12 @@ const GradeManagement = () => {
     })
   }
 
+  const handleCloseForm = () => {
+    setGradeFormShown(false);
+    setEditing(false);
+    setGradeFormInput(gradeFormDefault);
+  }
+
   // console.log(gradeFormInput);
   // console.log("params");
   // console.log(params);
@@ -113,7 +125,7 @@ const GradeManagement = () => {
 
         {/* Grade Form */}
         {gradeFormShown && 
-          <GradeForm closeForm={() => {setGradeFormShown(false); setEditing(false)}}
+          <GradeForm closeForm={handleCloseForm}
             editing={editing}
             setEditing={setEditing}
             refreshToggle={refreshToggle}
@@ -172,7 +184,7 @@ const GradeManagement = () => {
           <p>Quizzes 20%</p>
           <p>Participation 25%</p>
           <p>Projects 25%</p>
-          <p>Tests 25%</p>
+          <p>Tests 30%</p>
         </Grid>
       </Grid>
       

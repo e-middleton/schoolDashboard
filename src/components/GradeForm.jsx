@@ -81,6 +81,7 @@ const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refres
       <Grid container direction="column" spacing={1}>
         <InputLabel required="true" sx={{"fontSize": "1rem", color: "black"}}>Assignment Name</InputLabel>
         <TextField
+          required
           placeholder="Enter name..."
           value={gradeFormInput.assignmentName}
           onChange={(e) => setGradeFormInput({...gradeFormInput, assignmentName: e.target.value})}
@@ -96,6 +97,7 @@ const GradeForm = ({ closeForm, editing, setEditing, message, setMessage, refres
         </Grid>
         <Grid columns={12} sx={{"display": "flex", "flexDirection": "row", "alignItems": "center"}}>
           <TextField
+            required 
             placeholder="Between 0 and 100"
             value={gradeFormInput.assignmentGrade}
             onChange={(e) => setGradeFormInput({...gradeFormInput, assignmentGrade: e.target.value})}

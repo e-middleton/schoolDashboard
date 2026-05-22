@@ -4,6 +4,14 @@ import { db } from "../../firebase.js";
 // Fixed grade categories
 const gradeCategories = ["Quizzes", "Participation", "Projects", "Tests"];
 
+// Maps grade categories to weight
+const gradeCategoryToWeight = {
+  'quizGrades': 0.20, 
+  'participationGrades': 0.25,
+  'projectGrades': 0.25,
+  'testGrades': 0.30 
+};
+
 // Structure of grade document
 const gradeStructure = {
   classID: "",
@@ -14,7 +22,7 @@ const gradeStructure = {
   projectGrades: [] // contains grade records
 }
 
-// Maps category to designated property in document
+// Maps category labels to property names in document
 const categoryToProperty = {
   "Participation": "participationGrades",
   "Quizzes": "quizGrades",
@@ -76,7 +84,7 @@ const addGradeRecord = async (gradeRecord) => {
   )); 
 
   if (existingRecord) {
-    console.log(`update failed: record with name ${updatedRecord.assignmentName} already exists`);
+    console.log(`update failed: record with name ${gradeRecord.assignmentName} already exists`);
     return false;
   }
   
@@ -167,5 +175,5 @@ const deleteGradeRecord = async (gradeRecord) => {
   await updateDoc(doc(db, "grades", gradeDocument.id), gradeDocument)
 }
 
-export { gradeCategories, 
+export { gradeCategories, gradeCategoryToWeight,
   fetchGradeDocument, createGradeDocument, addGradeRecord, updateGradeRecord, deleteGradeRecord };
