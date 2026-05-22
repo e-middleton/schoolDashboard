@@ -85,8 +85,8 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
   // helper function for updating db records, handles input checking
   const updateRecord = async () => {
     // input validation
-    let err1 = false;
-    let err2 = false;
+    let err1 = false; // firstName
+    let err2 = false; // lastName
     let err4 = false; // dob
     let err5 = false; // email
 
@@ -96,7 +96,7 @@ const PersonForm = ( {isAdmin, isStudent, update, message, defaultInfo, closePop
       err2 = true;
     } else if (personData.dateOfBirth === null) {
       err4 = true;
-    } else if (personData.email === "") {
+    } else if (personData.email === undefined) {
       err5 = true;
     }
     setErrors({one: err1, two: err2, four: err4, five: err5});
