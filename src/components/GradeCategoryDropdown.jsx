@@ -38,7 +38,15 @@ const GradeCategoryDropdown = ({ label, gradeData, category, setMessage, refresh
         onClick={() => setMessage("")}>
 
         {/* Category Label */}
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography component="span">{label}</Typography></AccordionSummary>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        {/* "flexGrow": 1, "marginRight": "0.25rem", "justifyContent": "space-between",  */}
+          <div style={{display: "flex", gap: "0.5rem", "alignItems": "center"}}>
+            <div style={{"backgroundColor": "rgb(231, 227, 198)", padding: "0.25rem 0.65rem", "borderRadius": "0.25rem"}}>
+              <Typography variant="body2" component="span">{Object.keys(gradeData?.[category]).length}</Typography>
+            </div>
+            <Typography component="span">{label}</Typography>
+          </div>
+        </AccordionSummary>
 
         {/* Contents */}
         <Grid container sx={{"display": "flex", "flexDirection": "column", "gap": "0.5rem", "padding": "0.5rem"}}>
